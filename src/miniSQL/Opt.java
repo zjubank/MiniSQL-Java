@@ -96,7 +96,7 @@ public class Opt {
 	
 	void Create_Table_Infor(String s){
 		//Create_Table();
-		String str=s,substr="";
+		String str=s, substr="";
 		str=DisSpace.dislodge_space(s);
 		
 		

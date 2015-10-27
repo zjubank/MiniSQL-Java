@@ -74,7 +74,7 @@ public class interpreter {
 		else if (option.equalsIgnoreCase("delete")) Option.Delete(rest);
 		else if (option.equalsIgnoreCase("drop"))   Option.Drop(rest);
 		else if (option.equalsIgnoreCase("insert")) Option.Insert(rest);
-        else Excep.false;
+        else Excep.TypeError();
 	}
 	
 	
