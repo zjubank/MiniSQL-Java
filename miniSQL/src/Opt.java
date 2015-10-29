@@ -1,6 +1,9 @@
 package miniSQL;
 
+import java.io.IOException;
+
 public class Opt {
+	public static API api = new API();
 	private DisPreSpace DisSpace=new DisPreSpace();
 	private Exception Excep= new Exception();
 	
@@ -8,7 +11,7 @@ public class Opt {
 	
 	
 	//===============================create===========================//
-	void Create(String s){
+	void Create(String s) throws IOException{
 		String str=s;
 		String type="";
 		
@@ -19,6 +22,8 @@ public class Opt {
 			name=str.substring(split);
 			name=DisSpace.dislodge_space(name);
 			if (Check_nameLegal(name))
+				
+				//=======================Create Database==========================
 				System.out.println("Database Create Success");
 			else Excep.NameProblem("DATABASE","NULL");
 			}
@@ -34,16 +39,19 @@ public class Opt {
 			name=rest.substring(0,split_brac1);
 			name=DisSpace.dislodge_space(name);
 			infor=rest.substring(split_brac1+1,split_brac2);
-			System.out.println(name);
-			if (!name.isEmpty()){
+			System.out.println("****name**** : " + name);
+			if (!name.isEmpty())
+			{
 				if (Check_nameLegal(name)) Excep.NameProblem("TABLE","ILLEGAL");
 			}
-			else Excep.NameProblem("TABLE","NULL");
+			else
+			{
+				Excep.NameProblem("TABLE","NULL");
+			}
 			if (!infor.isEmpty())
+			{
 				Create_Table_Infor(infor);
-			
-			
-			
+			}
 			System.out.println("Table Created");
 		}
 		
@@ -85,7 +93,7 @@ public class Opt {
 				Excep.CreateError();
 				return;
 			}
-			
+			//========================Create Index======================
 			System.out.println(index_name);
 			System.out.println(table_name+"    "+sname);
 		}
@@ -94,7 +102,7 @@ public class Opt {
 	
 
 	
-	void Create_Table_Infor(String s){
+	void Create_Table_Infor(String s) throws IOException{
 		//Create_Table();
 		String str=s, substr="";
 		str=DisSpace.dislodge_space(s);
@@ -331,7 +339,7 @@ public class Opt {
 	}
 	
 	//==============================function==============================//
-	void Insert_Table_Element(String s) {
+	void Insert_Table_Element(String s) throws IOException {
 		String str=DisSpace.dislodge_space(s);
 		int comma,lastcomma=0;
 		str=str+",";
@@ -386,6 +394,28 @@ public class Opt {
 			System.out.println("name:"+name+"  type:"+type+"  para1:"+para1+"  para2:"+para2);
 			lastcomma=comma+1;
 			comma=str.indexOf(",", lastcomma);
+			
+//			API: Add(Uni, Pri, ty, name, scale, add);
+			boolean Uni = judgement_for_attri(substr);
+			boolean Pri = judgement_for_attri(substr);
+			int scale, add;
+			if( para1.length() > 0 )
+			{
+				scale = Integer.parseInt(para1);
+			}
+			else
+			{
+				scale = 0;
+			}
+			if( para2.length() > 0 )
+			{
+				add = Integer.parseInt(para2);
+			}
+			else
+			{
+				add = 0;
+			}
+			API.create_table(Uni, Pri, type, name, scale, add);
 		}while (comma!=-1);
 	}
 	

@@ -9,8 +9,9 @@ public class IndexManager {
 		buf=buffer;
 	}
 
+/*
 private static byte[] getColumnValue(Table  tableinfor,Index  indexinfor, byte[] row){
-		
+
 		int s_pos = 0, f_pos = 0;	
 		for(int i= 0; i <= indexinfor.Attri; i++){ 
 			s_pos = f_pos;
@@ -55,4 +56,5 @@ private static byte[] getColumnValue(Table  tableinfor,Index  indexinfor, byte[]
         	
         	System.out.println("创建索引成功！");
 	}
+*/
 }
