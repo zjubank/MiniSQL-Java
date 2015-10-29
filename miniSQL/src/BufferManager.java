@@ -1,8 +1,9 @@
-package myminisql;
+package miniSQL;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
+//import java.io.FileInputStream;
+//import java.io.FileNotFoundException;
+//import java.io.IOException;
 
 public class BufferManager {
 	static public int BlockNum = 0;

@@ -1,6 +1,6 @@
-package myminisql;
+package miniSQL;
 
-import java.io.File;
+//import java.io.File;
 
 public class IndexManager {
 	public static BufferManager buf;
@@ -49,9 +49,9 @@ private static byte[] getColumnValue(Table  tableinfor,Index  indexinfor, byte[]
         	}catch(NullPointerException e){
         		System.err.println("must not be null for key.");
         	}
-        	catch(Exception e){
-        		System.err.println("the index has not been created.");
-        	}
+//        	catch(Exception e){
+//        		System.err.println("the index has not been created.");
+//        	}
         	
         	System.out.println("创建索引成功！");
 	}

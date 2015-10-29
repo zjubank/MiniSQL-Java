@@ -1,4 +1,4 @@
-package myminisql;
+package miniSQL;
 
 public class main {
 	public static void main(String args[]){

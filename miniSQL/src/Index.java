@@ -1,4 +1,4 @@
-package myminisql;
+package miniSQL;
 
 public class Index {
 	public String IndexName;
