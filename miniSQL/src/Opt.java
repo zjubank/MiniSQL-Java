@@ -3,12 +3,8 @@ package miniSQL;
 import java.io.IOException;
 
 public class Opt {
-	public static API api = new API();
 	private DisPreSpace DisSpace=new DisPreSpace();
 	private Exception Excep= new Exception();
-	
-	
-	
 	
 	//===============================create===========================//
 	void Create(String s) throws IOException{
@@ -16,45 +12,59 @@ public class Opt {
 		String type="";
 		
 		int split=str.indexOf(" ");
-		type= str.substring(0, split);		
+		type= str.substring(0, split);
+		
+		//=======================Create Database==========================
 		if (type.equalsIgnoreCase("database")){
 			String name="";
 			name=str.substring(split);
 			name=DisSpace.dislodge_space(name);
-			if (Check_nameLegal(name))
+			if (Check_nameLegal(name)){	
 				
-				//=======================Create Database==========================
+				API.CreateDatabase(name);
+				
 				System.out.println("Database Create Success");
-			else Excep.NameProblem("DATABASE","NULL");
 			}
+			else{
+				Excep.NameProblem("DATABASE","NULL");
+			}
+		}
+		//=========================Create Table============================
 		else if (type.equalsIgnoreCase("table")){
 			String rest="";
 			String name="";
 			String infor="";
+			
 			rest=str.substring(split);
 			rest=DisSpace.dislodge_space(rest);
+			
 			int split_brac1,split_brac2;
 			split_brac1=rest.indexOf("(");
 			split_brac2=rest.lastIndexOf(")");
+			
 			name=rest.substring(0,split_brac1);
 			name=DisSpace.dislodge_space(name);
+			System.out.println("|****Table Name: " + name);
+			
 			infor=rest.substring(split_brac1+1,split_brac2);
-			System.out.println("****name**** : " + name);
 			if (!name.isEmpty())
 			{
-				if (Check_nameLegal(name)) Excep.NameProblem("TABLE","ILLEGAL");
+				if (Check_nameLegal(name)) 
+					Excep.NameProblem("TABLE","ILLEGAL");
 			}
 			else
 			{
 				Excep.NameProblem("TABLE","NULL");
 			}
+			
 			if (!infor.isEmpty())
 			{
 				Create_Table_Infor(infor);
 			}
+			
 			System.out.println("Table Created");
 		}
-		
+		//========================Create Index=========================
 		else if (type.equalsIgnoreCase("index")){
 			String rest="";
 			String index_name="";
@@ -93,14 +103,15 @@ public class Opt {
 				Excep.CreateError();
 				return;
 			}
-			//========================Create Index======================
+			
+			API.CreateIndex(index_name, table_name, sname);
+			
 			System.out.println(index_name);
 			System.out.println(table_name+"    "+sname);
 		}
 		else Excep.CreateType();
 	}
 	
-
 	
 	void Create_Table_Infor(String s) throws IOException{
 		//Create_Table();
@@ -154,6 +165,7 @@ public class Opt {
 			//select(names,) 
 		}
 		
+		API.Select(before_from, after_where);
 		//System.out.println("distinct:"+distinct);
 		//for (int i=0;i<names.length;i++)
 		//System.out.println("before from:"+names[i]);
@@ -188,6 +200,8 @@ public class Opt {
 		names=Split_Name(all_name);
 		Split_Cond(all_cond);
 		Split_Where_Orders(rest);
+		
+		API.Update(all_name, all_cond, rest);
 		
 		System.out.println(all_name);
 		System.out.println(all_cond);
@@ -234,6 +248,7 @@ public class Opt {
 			//operate(table_name);	
 		}
 		
+		API.Detele(table_name, after_where);
 		
 	}
 	
@@ -251,12 +266,17 @@ public class Opt {
 		if (type.equals("table")){
 			String name;
 			name=str.substring(type_space+1);
+			
+			API.DropTable(name);
 		}
 		else if (type.equals("index")){
 			String name;
 			name=str.substring(type_space+1);
+			
+			API.DropIndex(name);
 		}
 		else Excep.DropError();
+		
 	}
 	
 	//==============================insert================================//
@@ -298,6 +318,9 @@ public class Opt {
 			return;
 		}
 		//operate(names,all_value)
+		
+		API.Insert(names, all_value);
+		
 		System.out.println(names+values);
 	}
 	
@@ -396,26 +419,28 @@ public class Opt {
 			comma=str.indexOf(",", lastcomma);
 			
 //			API: Add(Uni, Pri, ty, name, scale, add);
-			boolean Uni = judgement_for_attri(substr);
-			boolean Pri = judgement_for_attri(substr);
-			int scale, add;
-			if( para1.length() > 0 )
-			{
-				scale = Integer.parseInt(para1);
-			}
-			else
-			{
-				scale = 0;
-			}
-			if( para2.length() > 0 )
-			{
-				add = Integer.parseInt(para2);
-			}
-			else
-			{
-				add = 0;
-			}
-			API.create_table(Uni, Pri, type, name, scale, add);
+//			
+//			boolean Uni = judgement_for_attri(substr);
+//			boolean Pri = judgement_for_attri(substr);
+//			int scale, add;
+//			if( para1.length() > 0 )
+//			{
+//				scale = Integer.parseInt(para1);
+//			}
+//			else
+//			{
+//				scale = 0;
+//			}
+//			if( para2.length() > 0 )
+//			{
+//				add = Integer.parseInt(para2);
+//			}
+//			else
+//			{
+//				add = 0;
+//			}
+//			API.create_table(Uni, Pri, type, name, scale, add);
+			
 		}while (comma!=-1);
 	}
 	

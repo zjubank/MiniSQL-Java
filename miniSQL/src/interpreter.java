@@ -48,7 +48,7 @@ public class interpreter {
 	private static void OptionDefine() throws IOException{
 		String temp_query;
 		temp_query=query;
-		System.out.println(temp_query + "|**** CheckPoint: interpreter.OptionDeifine:temp_query ****|");
+//		System.out.println(temp_query);
 		temp_query=DisSpace.dislodge_space(temp_query);
 		if (temp_query.isEmpty()) {
 			Excep.IsEmpty();
@@ -63,7 +63,7 @@ public class interpreter {
 			option = temp_query.substring(0,split_pos);
 			rest = temp_query.substring(split_pos+1);
 		}
-		System.out.println(option+"/"+rest + "|**** CheckPoint: interpreter.OptionDeifine:opention+/+rest ****|");
+//		System.out.println(option+"/"+rest);
 		allocate(option,rest);
 	}
 	
@@ -106,8 +106,4 @@ public class interpreter {
         	Excep.TypeError();
         }
 	}
-	
-	
-
-	
 }

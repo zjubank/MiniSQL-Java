@@ -4,46 +4,40 @@ import java.io.*;
 import java.util.ArrayList;
 
 public class Table {
-	String TableName="";
-	int ListNum=0;
-	ArrayList<Attribute> table=new ArrayList<Attribute>();
-	boolean Create(String tname){
-		TableName=tname;
-		ListNum=0;
-		return true;
+	String TableName	= "";
+	int ListNum			= 0;
+	ArrayList<Attribute> table = new ArrayList<Attribute>();
+	
+	public Table(String tname)
+	{
+		this.TableName	= tname;
+		this.ListNum	= 0;
 	}
 	
-	boolean Add(boolean Uni, boolean Pri, String ty, String name, int scale, int add){
-		Attribute temp = new Attribute();
-		temp.unique=Uni;
-		temp.Primer=Pri;
-		temp.name=name;
-		temp.scale=scale;
-		temp.length=0;
-		switch (ty.toUpperCase()){
-			case "INT": 	temp.type=0; temp.addit=-1;break;
-			case "FLOAT": 	temp.type=1; temp.addit=add;break;
-			case "STRING":	temp.type=2; temp.addit=-1;break; 
+	boolean Add( Attribute attri ){
+		//这块要放到interpreter或api中
+		switch (ty.toLowerCase()){
+			case "int": 	attri.Type=0; attri.Addit=-1;break;
+			case "float": 	attri.Type=1; attri.Addit=add;break;
+			case "string":	attri.Type=2; attri.Addit=-1;break; 
 			default: return false;
 		}
+		//对就是上面这块
 		
 		for (int i=0; i<table.size();i++){
-			if (table.get(i).name.equals(temp.name)){
+			if (table.get(i).AttributeName.equals(attri.AttributeName)){
 				return false;
 			}
 		}
 		
-		table.add(temp);
+		table.add(attri);
 		ListNum++;
 		return true;//success
 	}
 	
-	
-	
-	
-	boolean Delete(String name){
+	public boolean Delete(String name){
 		for (int i=0; i<table.size();i++){
-			if (table.get(i).name.equals(name)){
+			if (table.get(i).AttributeName.equals(name)){
 				table.remove(i);
 				ListNum--;
 				return true;//Success
@@ -54,17 +48,32 @@ public class Table {
 		return false;
 	}
 	
-	boolean Print() throws IOException{
+	public boolean PrintCreate() throws IOException
+	{
+		String filepath = TableName + ".cat";
+		System.out.println("|**** Create Filepath:"+filepath);
+		File file = new File(filepath);
+		if( !file.exists() )
+		{
+			file.createNewFile();
+		}
+		PrintInsert();
+		return true;
+	}
+	
+	public boolean PrintInsert() throws IOException{
 		String FileName=TableName+".cat";
+		System.out.println("|**** Inserc Filepath:"+FileName);
 		FileWriter fout=new FileWriter(FileName);
 		fout.write(ListNum+"\n");
 		for (int i=0;i<ListNum;i++){
-			fout.write(table.get(i).name+"\n");
-			fout.write(table.get(i).length+"\n");
-			fout.write(table.get(i).type+"\n");
-			fout.write(table.get(i).unique+"\n");
-			fout.write(table.get(i).Primer+"\n");
+			fout.write(table.get(i).AttributeName+"\n");
+			fout.write(table.get(i).Length+"\n");
+			fout.write(table.get(i).Type+"\n");
+			fout.write(table.get(i).IfUnique+"\n");
+			fout.write(table.get(i).IfPrimer+"\n");
 		}
+		fout.close();
 		return true;//success
 	}
 	
