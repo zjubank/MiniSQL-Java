@@ -53,7 +53,9 @@ public class API {
 //		System.out.println("Index = "+Index);
 		if( Index > -1 )
 		{
-			database.Tables.get(Index).Add( tmp_attri );
+			Table temp_table = database.Tables.get(Index);
+			temp_table.Add(tmp_attri);
+			database.Tables.set(Index, temp_table );
 			return true;
 		}
 		return false;
@@ -99,7 +101,7 @@ public class API {
 		return true;
 	}
 	
-	public static boolean Insert( String TableName, String[] Values)
+	public static boolean Insert( String TableName, String[] Values) throws NumberFormatException
 	{
 //		System.out.println("|**** Insert ****|");
 		int Index_Table = -1;
@@ -112,8 +114,7 @@ public class API {
 		}
 		
 		int Index_ValueNo = 0;
-		Table temp=database.Tables.get(Index_Table);
-		int i=0;
+		Table temp_table = database.Tables.get(Index_Table);
 		while( Values[Index_ValueNo] != null )
 		{
 			//表已经匹配，和Values对应的Record（也就是Attribute）依次赋值
@@ -122,13 +123,54 @@ public class API {
 				//0:int, 1:float, 2:String
 				case 0:
 				{
+					int temp_int = 0;
+					try{
+						temp_int = Integer.parseInt(Values[Index_ValueNo]);
+					}
+					catch( NumberFormatException e )
+					{
+						return false;
+					}
 					
-					//Check if values is int
+					Record temp_record = temp_table.Records.get(Index_ValueNo);
+					Attribute temp_attri = temp_table.Attributes.get(Index_ValueNo);
+					
+					if (!temp_record.add(temp_int))
+					{
+						//Excep
+						return false;
+					}
+					temp_attri.Length++;
+					
+					temp_table.Records.set(Index_ValueNo,temp_record);
+					temp_table.Attributes.set(Index_ValueNo, temp_attri);
+					
 					break;
 				}
 				case 1:
 				{
-					//Check if values is float
+					double temp_double = 0;
+					try{
+						temp_double = Double.parseDouble(Values[Index_ValueNo]);
+					}
+					catch( NumberFormatException e )
+					{
+						return false;
+					}
+					
+					Record temp_record = temp_table.Records.get(Index_ValueNo);
+					Attribute temp_attri = temp_table.Attributes.get(Index_ValueNo);
+					
+					if (!temp_record.add(temp_double))
+					{
+						//Excep
+						return false;
+					}
+					temp_attri.Length++;
+					
+					temp_table.Records.set(Index_ValueNo,temp_record);
+					temp_table.Attributes.set(Index_ValueNo, temp_attri);
+					
 					break;
 				}
 				case 2:
@@ -139,25 +181,26 @@ public class API {
 						System.out.println(Values[Index_ValueNo]);
 //						int Index_Record = database.Tables.get(Index).Attributes.get(Index_ValueNo).Length;
 						//同一个Index_ValueNo的Records，永远只会add同一个类型的值
-						Record tempRecord=temp.Records.get(i);
-						if (!tempRecord.add(Values[Index_ValueNo])){
+						Record temp_record = temp_table.Records.get(Index_ValueNo);
+						Attribute temp_attri = temp_table.Attributes.get(Index_ValueNo);
+						if (!temp_record.add(Values[Index_ValueNo])){
 							//Excep
-						};
-						
-						temp.Records.set(i,tempRecord);
+							return false;
+						}
+						temp_attri.Length++;
+						temp_table.Records.set(Index_ValueNo,temp_record);
+						temp_table.Attributes.set(Index_ValueNo, temp_attri);
 					}
 					else
 						Excep.InsertError();
-					i++;
 					break;
 				}
 				default: break;
 			}
 			
 		}
-		
-		//赋值成功后Attribute.Length++
-		database.Tables.get(Index_Table).Attributes.get(Index_ValueNo).Length++;
+		Index_ValueNo++;
+		database.Tables.set(Index_ValueNo, temp_table);
 		return true;
 	}
 	
