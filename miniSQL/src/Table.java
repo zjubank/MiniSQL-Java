@@ -5,41 +5,33 @@ import java.util.ArrayList;
 
 public class Table {
 	String TableName	= "";
-	int ListNum			= 0;
-	ArrayList<Attribute> table = new ArrayList<Attribute>();
+	int AttriNum			= 0;
+	ArrayList<Attribute>	Attributes	= new ArrayList<Attribute>();
+	ArrayList<Record>		Records		= new ArrayList<Record>();
 	
 	public Table(String tname)
 	{
 		this.TableName	= tname;
-		this.ListNum	= 0;
+		this.AttriNum	= 0;
 	}
 	
 	boolean Add( Attribute attri ){
-		//这块要放到interpreter或api中
-		switch (ty.toLowerCase()){
-			case "int": 	attri.Type=0; attri.Addit=-1;break;
-			case "float": 	attri.Type=1; attri.Addit=add;break;
-			case "string":	attri.Type=2; attri.Addit=-1;break; 
-			default: return false;
-		}
-		//对就是上面这块
-		
-		for (int i=0; i<table.size();i++){
-			if (table.get(i).AttributeName.equals(attri.AttributeName)){
+		for (int i=0; i<Attributes.size();i++){
+			if (Attributes.get(i).AttributeName.equals(attri.AttributeName)){
 				return false;
 			}
 		}
 		
-		table.add(attri);
-		ListNum++;
+		Attributes.add(attri);
+		AttriNum++;
 		return true;//success
 	}
 	
 	public boolean Delete(String name){
-		for (int i=0; i<table.size();i++){
-			if (table.get(i).AttributeName.equals(name)){
-				table.remove(i);
-				ListNum--;
+		for (int i=0; i<Attributes.size();i++){
+			if (Attributes.get(i).AttributeName.equals(name)){
+				Attributes.remove(i);
+				AttriNum--;
 				return true;//Success
 			}
 		}
@@ -65,13 +57,13 @@ public class Table {
 		String FileName=TableName+".cat";
 		System.out.println("|**** Inserc Filepath:"+FileName);
 		FileWriter fout=new FileWriter(FileName);
-		fout.write(ListNum+"\n");
-		for (int i=0;i<ListNum;i++){
-			fout.write(table.get(i).AttributeName+"\n");
-			fout.write(table.get(i).Length+"\n");
-			fout.write(table.get(i).Type+"\n");
-			fout.write(table.get(i).IfUnique+"\n");
-			fout.write(table.get(i).IfPrimer+"\n");
+		fout.write(AttriNum+"\n");
+		for (int i=0;i<AttriNum;i++){
+			fout.write(Attributes.get(i).AttributeName+"\n");
+			fout.write(Attributes.get(i).Length+"\n");
+			fout.write(Attributes.get(i).Type+"\n");
+			fout.write(Attributes.get(i).IfUnique+"\n");
+			fout.write(Attributes.get(i).IfPrimer+"\n");
 		}
 		fout.close();
 		return true;//success
@@ -83,8 +75,8 @@ public class Table {
 		BufferedReader bf= new BufferedReader(fin);
 		String Stemp;
 		Stemp=bf.readLine();
-		ListNum=Integer.parseInt(Stemp);
-		for (int i=0;i<ListNum;i++){
+		AttriNum=Integer.parseInt(Stemp);
+		for (int i=0;i<AttriNum;i++){
 			boolean Uni=false,Pri=false;
 			int len=0, sca=9, ty=0, add=-1;
 			String n;
@@ -105,6 +97,12 @@ public class Table {
 				Pri=true;
 		}
 		return true;//success
+	}
+	
+	
+	
+	void InsertElement(int index,String s){
+		
 	}
 //	By lhq
 //	public String TableName;

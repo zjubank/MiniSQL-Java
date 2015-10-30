@@ -2,7 +2,6 @@ package miniSQL;
 
 import java.util.Scanner;
 import java.io.IOException;
-import java.lang.*;
 
 public class interpreter {
 	private static String query="";
@@ -33,9 +32,8 @@ public class interpreter {
 				String substr = str.substring(0,pos_of_semicolon);
 				query=query+substr;
 				//query finished.3
-				System.out.println(query + "|**** CheckPoint: interpreter.inputQuery:query ****|");
+//				System.out.println(query);
 				OptionDefine();
-				
 				
 				query="";
 				System.out.print("MiniSQL>>");
@@ -72,38 +70,18 @@ public class interpreter {
 		rest=DisSpace.dislodge_space(rest);
 		rest=rest.toLowerCase();
 		if (option.equalsIgnoreCase("create")) 
-		{
 			Option.Create(rest);
-//			System.out.println("|**** Create ****|");
-		}
 		else if (option.equalsIgnoreCase("select")) 
-		{
 			Option.Select(rest);
-//			System.out.println("|**** Select ****|");
-		}
 		else if (option.equalsIgnoreCase("update")) 
-		{
 			Option.Update(rest);
-//			System.out.println("|**** Update ****|");
-		}
 		else if (option.equalsIgnoreCase("delete")) 
-		{
 			Option.Delete(rest);
-//			System.out.println("|**** Delete ****|");
-		}
 		else if (option.equalsIgnoreCase("drop"))
-		{
 			Option.Drop(rest);
-//			System.out.println("|**** Drop ****|");
-		}
 		else if (option.equalsIgnoreCase("insert")) 
-		{
 			Option.Insert(rest);
-//			System.out.println("|**** Insert ****|");
-		}
         else 
-        {
         	Excep.TypeError();
-        }
 	}
 }

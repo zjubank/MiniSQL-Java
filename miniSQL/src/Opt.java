@@ -44,7 +44,9 @@ public class Opt {
 			
 			name=rest.substring(0,split_brac1);
 			name=DisSpace.dislodge_space(name);
-			System.out.println("|****Table Name: " + name);
+			
+			System.out.println("TableName: " + name);
+			API.create_table(name);
 			
 			infor=rest.substring(split_brac1+1,split_brac2);
 			if (!name.isEmpty())
@@ -59,9 +61,8 @@ public class Opt {
 			
 			if (!infor.isEmpty())
 			{
-				Create_Table_Infor(infor);
+				Create_Table_Infor(name, infor);
 			}
-			
 			System.out.println("Table Created");
 		}
 		//========================Create Index=========================
@@ -113,17 +114,17 @@ public class Opt {
 	}
 	
 	
-	void Create_Table_Infor(String s) throws IOException{
+	void Create_Table_Infor(String name, String s) throws IOException{
 		//Create_Table();
 		String str=s, substr="";
 		str=DisSpace.dislodge_space(s);
 		
 		
 		System.out.println("mark");	
-		Insert_Table_Element(str);
+		Insert_Table_Element(name, str);
 		//System.out.println(s);
 	}
-
+	
 	//==================================select================================//
 	
 	
@@ -292,6 +293,7 @@ public class Opt {
 		rest=str.substring(into_space+1);
 		rest=DisSpace.dislodge_space(rest);
 		if (!if_into.equals("into")){
+//			System.out.println("Error at Poit 1.");
 			Excep.InsertError();
 			return;
 		}
@@ -299,6 +301,7 @@ public class Opt {
 		int values_pos;
 		values_pos=rest.indexOf("values");
 		if (values_pos==-1){
+//			System.out.println("Error at Poit 2.");
 			Excep.InsertError();
 			return;
 		}
@@ -308,20 +311,26 @@ public class Opt {
 		values=DisSpace.dislodge_space(values);
 		String[] all_value=new String[32];
 		if (values.charAt(0)!='('||values.charAt(values.length()-1)!=')'){
+//			System.out.println("Error at Poit 3.");
 			Excep.InsertError();
 			return;
 		}
 		values=values.substring(1,values.length()-1);
+//		System.out.println("===Values:"+values); 这里的values就是自然语言提取出的
 		all_value=split_values(values);
 		if (all_value==null){
+			System.out.println("Error at Poit 4.");
 			Excep.InsertError();
 			return;
 		}
 		//operate(names,all_value)
 		
 		API.Insert(names, all_value);
-		
-		System.out.println(names+values);
+//		System.out.println("Names:"+names);
+//		for(String t_value : all_value)
+//		{
+//			System.out.println(t_value);
+//		}
 	}
 	
 	String[] split_values(String s){
@@ -342,15 +351,19 @@ public class Opt {
 				sub_split=str.substring(last_comma,comma);
 			}
 			if (i==31){
+//				System.out.println("Error at Poit 5.");
 				Excep.InsertErrorOutOfBound();
 				return values;
 			}
 			sub_split=DisSpace.dislodge_space(sub_split);
-			if (sub_split.charAt(0)!='\''||sub_split.charAt(sub_split.length()-1)!='\''){
+//			System.out.println("===sub_split:"+sub_split); //这个是分割出来的
+			
+			/*if (sub_split.charAt(0)!='\''||sub_split.charAt(sub_split.length()-1)!='\''){
+//				System.out.println("Error at Poit 6.");
 				Excep.InsertError();
 				return null;
 			}
-			sub_split=sub_split.substring(1,sub_split.length()-1);
+			sub_split=sub_split.substring(1,sub_split.length()-1);*/
 			values[i]=sub_split;
 			i++;
 			System.out.println(sub_split);
@@ -362,13 +375,13 @@ public class Opt {
 	}
 	
 	//==============================function==============================//
-	void Insert_Table_Element(String s) throws IOException {
+	void Insert_Table_Element(String tablename, String s) throws IOException {
 		String str=DisSpace.dislodge_space(s);
 		int comma,lastcomma=0;
 		str=str+",";
 		comma=str.indexOf(",");
-		System.out.println(comma);
-		System.out.println(str);
+//		System.out.println("####Function.Comma:"+comma);
+//		System.out.println("####Function.Str:"+str);
 		do{
 			String substr,name,type,para1="",para2="",para="";
 			int split_space,split_brac1,split_brac2;
@@ -376,7 +389,16 @@ public class Opt {
 			//depart one of the input
 			substr=DisSpace.dislodge_space(substr);
 			
-			if (judgement_for_attri(substr)) {
+			int judgement_result = judgement_for_attri(substr);
+			boolean IfUnique = false, IfPrimer = false;
+			if ( judgement_result != 0 ) {
+				if( judgement_result == 1 ){
+					IfUnique = true;
+				}
+				if( judgement_result == 2 ){
+					IfPrimer = true;
+					IfUnique = true;
+				}
 				lastcomma=comma+1;
 				comma=str.indexOf(",", lastcomma);
 				continue;
@@ -414,32 +436,43 @@ public class Opt {
 			}
 			else Excep.NameProblem("VAR","NULL");
 			
-			System.out.println("name:"+name+"  type:"+type+"  para1:"+para1+"  para2:"+para2);
 			lastcomma=comma+1;
 			comma=str.indexOf(",", lastcomma);
 			
-//			API: Add(Uni, Pri, ty, name, scale, add);
-//			
-//			boolean Uni = judgement_for_attri(substr);
-//			boolean Pri = judgement_for_attri(substr);
-//			int scale, add;
-//			if( para1.length() > 0 )
-//			{
-//				scale = Integer.parseInt(para1);
-//			}
-//			else
-//			{
-//				scale = 0;
-//			}
-//			if( para2.length() > 0 )
-//			{
-//				add = Integer.parseInt(para2);
-//			}
-//			else
-//			{
-//				add = 0;
-//			}
-//			API.create_table(Uni, Pri, type, name, scale, add);
+			int Length = 0;
+			
+			int Scale = 9;
+			if( para1.length() > 0 ){
+				Scale = Integer.parseInt(para1);
+			}
+			else{
+				Scale = 0;
+			}
+			
+			int Type = 0, Addit = -1;
+			switch (type.toLowerCase()){
+				case "int":{
+					Type = 0;
+					Addit = -1;	
+					break;
+				}
+				case "float":{
+					Type = 1;
+					if(para2.length()>0){
+						Addit = Integer.parseInt(para2);
+					}
+					break;
+				}
+				case "string":{
+					Type = 2;
+					Addit = -1;	break; 
+				}
+				default: break;
+			}
+			
+			System.out.println("Tablename:"+tablename+", Name:"+name+", Type:"+Type+", Length:"+Length+", Scale:"+Scale+", Addit:"+Addit+", IfUni:"+IfUnique+", IfPri:"+IfPrimer);
+			API.add_attribute(tablename, name, Type, Length, Scale, Addit, IfUnique, IfPrimer);
+//			System.out.println("tablename:"+tablename+", name:"+name+", type:"+type+", para1:"+para1+", para2:"+para2+", para:"+para);
 			
 		}while (comma!=-1);
 	}
@@ -459,12 +492,13 @@ public class Opt {
 	
 	
 	
-	boolean judgement_for_attri(String s){
-		String if_pri,if_uni;
+	int judgement_for_attri(String s){
+		String if_uni, if_pri;
 		
-		if (s.length()<6) return false;
+		if (s.length()<6) 
+			return 0;
 		if_uni=s.substring(0,6);
-		System.out.println(if_uni);
+//		System.out.println(if_uni);
 		if (if_uni.equals("unique"))
 		{
 			String rest;
@@ -476,28 +510,29 @@ public class Opt {
 			brac2=rest.lastIndexOf(")");
 			if (brac1==-1||brac2==-1){
 				Excep.CreateError();
-				return false;
+				return 0;
 			}
 			sname=rest.substring(brac1+1,brac2);
 			sname=DisSpace.dislodge_space(sname);
-			System.out.println(sname);
-			return true;
+//			System.out.println(sname);
+			return 1;
 		}
 		
 		
 		//pri_judgement
 		
-		if (s.length()<7) return false;
+		if (s.length()<7) 
+			return 0;
 		if_pri=s.substring(0,7);
-		System.out.println(if_pri);
+//		System.out.println(if_pri);
 		if (if_pri.equals("primary"))
 		{
 			String if_key,rest;
 			rest=s.substring(7);
-			System.out.println(rest);
+//			System.out.println(rest);
 			rest=DisSpace.dislodge_space(rest);
 			if_key=rest.substring(0,3);
-			System.out.println(if_key);
+//			System.out.println(if_key);
 			if (if_key.equals("key")){
 				rest=rest.substring(3);
 				String sname;
@@ -506,16 +541,16 @@ public class Opt {
 				brac2=rest.lastIndexOf(")");
 				if (brac1==-1||brac2==-1){
 					Excep.CreateError();
-					return false;
+					return 0;
 				}
 				sname=rest.substring(brac1+1,brac2);
 				sname=DisSpace.dislodge_space(sname);
-				System.out.println(sname);
+//				System.out.println(sname);
 				//primary_key(sname);
-				return true;
+				return 2;
 			}
 		}
-		return false;
+		return 0;
 	}
 	
 	//=================name of var=====================//
