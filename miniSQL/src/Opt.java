@@ -1,6 +1,7 @@
 package miniSQL;
 
 import java.io.IOException;
+import java.util.*;
 
 public class Opt {
 	private DisPreSpace DisSpace=new DisPreSpace();
@@ -132,6 +133,8 @@ public class Opt {
 		int split,dist,where_pos;
 		String str=s, before_from="", after_from="", distinct="";
 		String after_where="";
+		String TableName = "";
+		
 		split=str.indexOf("from");
 		if (split==-1) {
 			Excep.SelectError();
@@ -151,25 +154,31 @@ public class Opt {
 				distinct="";
 			}
 		}
-		String[] names=new String[20];
-		names=Split_Name(before_from);
+//		System.out.println("str:"+str);
+//		System.out.println("distince:"+distinct);
 		
+		String[] names=new String[20];
+		names=Split_Name(before_from); //这个names并不是啥
+		
+		WhereList wherelist = null;
 		where_pos=after_from.indexOf("where");
 		if (where_pos!=-1) {
-			
 			after_where=after_from.substring(where_pos+5);
-			System.out.println("After_Where:"+after_where);
-			Split_Where_Orders(after_where);
+			System.out.println("After_from:"+after_from); 
+			System.out.println("After_where:"+after_where); 
+			wherelist = Split_Where_Orders(after_where);
 			//split.cond();
 		}
 		else {
 			//select(names,) 
 		}
-		
-		API.Select(before_from, after_where);
+		TableName = after_from.substring(0, where_pos);
+		TableName = TableName.trim();
+		System.out.println("TableName:"+ TableName);
+		API.Select(TableName, wherelist);
 		//System.out.println("distinct:"+distinct);
-		//for (int i=0;i<names.length;i++)
-		//System.out.println("before from:"+names[i]);
+//		for (int i=0;i<names.length;i++)
+//		System.out.println("before from:"+names[i]);
 		//System.out.println("after from:"+after_from);
 		//System.out.println("after where:"+after_where);
 	}
@@ -215,7 +224,7 @@ public class Opt {
 	
 	void Delete(String s){
 		String str=DisSpace.dislodge_space(s);
-		
+		WhereList wherelist = null;
 		int from_space_place=str.indexOf(" ");
 		int where_place;
 		String from, after_from, table_name,after_where;
@@ -239,7 +248,7 @@ public class Opt {
 			after_where=DisSpace.dislodge_space(after_where);
 			//operate(table_name);
 			System.out.println(table_name);
-			Split_Where_Orders(after_where);
+			wherelist = Split_Where_Orders(after_where);
 		}
 		else {
 			after_where="";
@@ -249,7 +258,7 @@ public class Opt {
 			//operate(table_name);	
 		}
 		
-		API.Detele(table_name, after_where);
+		API.Detele(table_name, wherelist);
 		
 	}
 	
@@ -575,9 +584,12 @@ public class Opt {
 	
 //where	
 	
-	void Split_Where_Orders(String s){
+	WhereList Split_Where_Orders(String s){
 		String str=DisSpace.dislodge_space(s);
+//		System.out.println("S:"+s);
+//		System.out.println("Str:"+str);
 		String suborder;
+		WhereList wherelist = new WhereList();
 		int comma,last_comma=0;
 		do{
 			comma=str.indexOf("and",last_comma);
@@ -585,15 +597,20 @@ public class Opt {
 				suborder=str.substring(last_comma,comma);
 			else suborder=str.substring(last_comma);
 			suborder=DisSpace.dislodge_space(suborder);
-			Gene_Order(suborder);
+			WhereCombine wherecombine = Gene_Order(suborder);
 			last_comma=comma+3;
+			
+			wherelist.lvars.add(wherecombine.lvar);
+			wherelist.rvars.add(wherecombine.rvar);
+			wherelist.signs.add(wherecombine.sign);
 		}while(comma!=-1); 
+		return wherelist;
 	}
 	
-	void Gene_Order(String s){
+	WhereCombine Gene_Order(String s){
 		String str=DisSpace.dislodge_space(s);
 		String[] sign_list={">=","<=","<>",">","<","="};
-		String lvar,rvar;
+		String lvar = "",rvar = "";
 		String sign="";
 		int sign_pos;
 		for (int i=0;i<sign_list.length;i++){
@@ -604,11 +621,13 @@ public class Opt {
 				rvar=str.substring(sign_pos+sign_list[i].length());
 				lvar=DisSpace.dislodge_space(lvar);
 				rvar=DisSpace.dislodge_space(rvar);
-				System.out.println("lvar:"+lvar+", rvar:"+rvar+", sign:"+sign_list[i]);
+				System.out.println("Loop"+i+"|"+"lvar:"+lvar+", rvar:"+rvar+", sign:"+sign_list[i]);
 				//operate (lvar,rvar,sign);
 			}
 		}
-		
+		System.out.println("ReturnTimes+1");
+		WhereCombine wherecombine = new WhereCombine(lvar, rvar, sign);
+		return wherecombine;
 	}
 	
 	//==========================conditions===========================//

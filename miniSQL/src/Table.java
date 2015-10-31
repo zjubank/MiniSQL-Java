@@ -9,10 +9,11 @@ public class Table {
 	ArrayList<Attribute>	Attributes	= new ArrayList<Attribute>();
 	ArrayList<Record>		Records		= new ArrayList<Record>();
 	
-	public Table(String tname)
+	public Table(String tname) throws IOException
 	{
 		this.TableName	= tname;
 		this.AttriNum	= 0;
+		PrintCreate();
 	}
 	
 	boolean Add( Attribute attri ){
@@ -27,6 +28,7 @@ public class Table {
 		return true;//success
 	}
 	
+	//删除单条记录
 	public boolean Delete(String name){
 		for (int i=0; i<Attributes.size();i++){
 			if (Attributes.get(i).AttributeName.equals(name)){
@@ -40,22 +42,21 @@ public class Table {
 		return false;
 	}
 	
-//	public boolean PrintCreate() throws IOException
-//	{
-//		String filepath = TableName + ".cat";
+	public boolean PrintCreate() throws IOException
+	{
+		String filepath = TableName + ".cat";
 //		System.out.println("|**** Create Filepath:"+filepath);
-//		File file = new File(filepath);
-//		if( !file.exists() )
-//		{
-//			file.createNewFile();
-//		}
-//		Print();
-//		return true;
-//	}
+		File file = new File(filepath);
+		if( !file.exists() )
+		{
+			file.createNewFile();
+		}
+		return true;
+	}
 	
 	public boolean Print() throws IOException{
 		String FileName=TableName+".cat";
-		System.out.println("|**** Inserc Filepath:"+FileName);
+//		System.out.println("|**** Inserc Filepath:"+FileName);
 		FileWriter fout=new FileWriter(FileName);
 		fout.write(AttriNum+"\n");
 		for (int i=0;i<AttriNum;i++){

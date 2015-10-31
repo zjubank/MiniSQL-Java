@@ -23,6 +23,7 @@ public class Attribute {
 		this.IfUnique 		= IfUnique;
 		this.IfPrimer 		= IfPrimer;
 	}
+	
 //	By lhq
 //	public boolean unique;
 //	public boolean Primer;

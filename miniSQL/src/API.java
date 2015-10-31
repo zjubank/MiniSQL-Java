@@ -27,17 +27,17 @@ public class API {
 				System.out.println("Table Already Existed!");
 				return false;
 		}
+
 		Table tmp_table = new Table(tablename);
-//		System.out.println("===Tablename: "+tablename);
 		database.Tables.add( tmp_table );
-//		System.out.println("===Inedx: "+ database.Tables.indexOf(tmp_table));
+		
 		//Then store 'Table table' somewhere
 		return true;
 	}
 	
 //Loop: Add Attribute -> Class Attribute
 	//Attribute: String AttributeName, int Type, int Length, int Scale, int Addit, boolean IfUnique, boolean IfPrimer
-	public static boolean add_attribute( String tablename, String AttributeName, int Type, int Length, int Scale, int Addit, boolean IfUnique, boolean IfPrimer  )
+	public static boolean add_attribute( String tablename, String AttributeName, int Type, int Length, int Scale, int Addit, boolean IfUnique, boolean IfPrimer  ) throws IOException
 	{
 		
 		Attribute tmp_attri = new Attribute( AttributeName, Type, Length, Scale, Addit, IfUnique, IfPrimer);
@@ -56,6 +56,7 @@ public class API {
 			Table temp_table = database.Tables.get(Index);
 			temp_table.Add(tmp_attri);
 			database.Tables.set(Index, temp_table );
+			database.Tables.get(Index).Print();
 			return true;
 		}
 		return false;
@@ -71,28 +72,9 @@ public class API {
 		return true;
 	}
 	
-	public static boolean Select( String TableName, String After_Where )
+	public static boolean Select( String TableName, WhereList wherelist )
 	{
 //		System.out.println("|**** Select ****|");
-		
-		return true;
-	}
-	
-	public static boolean Update( String All_Name, String All_Cond, String Rest )
-	{
-//		System.out.println("|**** Update ****|");
-		return true;
-	}
-	
-	public static boolean Detele( String TableName, String After_Where )
-	{
-//		System.out.println("|**** Delete ****|");
-		return true;
-	}
-	
-	public static boolean DropTable( String TableName ) 
-	{
-//		System.out.println("|**** Drop ****|");
 		int Index = -1;// = database.Tables.indexOf(tablename);
 		for( int i = 0; i < database.Tables.size(); i++)
 		{
@@ -103,7 +85,60 @@ public class API {
 		}
 		if( Index > -1 )
 		{
-			database.Tables.remove(Index);
+			Table table = database.Tables.get(Index);
+			 
+			
+		}
+		return true;
+	}
+	
+	public static boolean Update( String All_Name, String All_Cond, String Rest )
+	{
+//		System.out.println("|**** Update ****|");
+		return true;
+	}
+	
+	public static boolean Detele( String TableName, WhereList wherelist )
+	{
+//		System.out.println("|**** Delete ****|");
+		int Index_Table = -1;// = database.Tables.indexOf(tablename);
+		for( int i = 0; i < database.Tables.size(); i++)
+		{
+			if( database.Tables.get(i).TableName.equals(TableName) )
+			{
+				Index_Table = i;
+			}
+		}
+		
+		if( Index_Table > -1 )
+		{
+			Table temp_table = database.Tables.get(Index_Table);
+			
+			if( wherelist == null ){
+				temp_table.Records.clear();
+//				temp_table.Attributes.LengthClear();
+				return true;
+			}
+			else{
+			}
+		}
+		return true;
+	}
+	
+	public static boolean DropTable( String TableName ) 
+	{
+//		System.out.println("|**** Drop ****|");
+		int Index_Table = -1;// = database.Tables.indexOf(tablename);
+		for( int i = 0; i < database.Tables.size(); i++)
+		{
+			if( database.Tables.get(i).TableName.equals(TableName) )
+			{
+				Index_Table = i;
+			}
+		}
+		if( Index_Table > -1 )
+		{
+			database.Tables.remove(Index_Table);
 		}
 		else
 		{
