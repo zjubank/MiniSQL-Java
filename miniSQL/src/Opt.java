@@ -158,7 +158,7 @@ public class Opt {
 		if (where_pos!=-1) {
 			
 			after_where=after_from.substring(where_pos+5);
-			System.out.println("A_W     "+after_where);
+			System.out.println("After_Where:"+after_where);
 			Split_Where_Orders(after_where);
 			//split.cond();
 		}
@@ -604,7 +604,7 @@ public class Opt {
 				rvar=str.substring(sign_pos+sign_list[i].length());
 				lvar=DisSpace.dislodge_space(lvar);
 				rvar=DisSpace.dislodge_space(rvar);
-				System.out.println("lvar  "+lvar+"  rvar  "+rvar+"  sign  "+sign_list[i]);
+				System.out.println("lvar:"+lvar+", rvar:"+rvar+", sign:"+sign_list[i]);
 				//operate (lvar,rvar,sign);
 			}
 		}
@@ -643,5 +643,11 @@ public class Opt {
 			//operate (lvar,rvar);
 		}
 		
+	}
+	
+	//=====================Execfile=====================
+	void Exec( String str )
+	{
+		;
 	}
 }

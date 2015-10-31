@@ -40,20 +40,20 @@ public class Table {
 		return false;
 	}
 	
-	public boolean PrintCreate() throws IOException
-	{
-		String filepath = TableName + ".cat";
-		System.out.println("|**** Create Filepath:"+filepath);
-		File file = new File(filepath);
-		if( !file.exists() )
-		{
-			file.createNewFile();
-		}
-		PrintInsert();
-		return true;
-	}
+//	public boolean PrintCreate() throws IOException
+//	{
+//		String filepath = TableName + ".cat";
+//		System.out.println("|**** Create Filepath:"+filepath);
+//		File file = new File(filepath);
+//		if( !file.exists() )
+//		{
+//			file.createNewFile();
+//		}
+//		Print();
+//		return true;
+//	}
 	
-	public boolean PrintInsert() throws IOException{
+	public boolean Print() throws IOException{
 		String FileName=TableName+".cat";
 		System.out.println("|**** Inserc Filepath:"+FileName);
 		FileWriter fout=new FileWriter(FileName);

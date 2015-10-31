@@ -23,7 +23,7 @@ public class API {
 	{
 		for( int i = 0; i < database.Tables.size(); i++ )
 		{
-			if( database.Tables.get(i).TableName == tablename )
+			if( database.Tables.get(i).TableName.equals(tablename) )
 				System.out.println("Table Already Existed!");
 				return false;
 		}
@@ -45,7 +45,7 @@ public class API {
 		int Index = -1;// = database.Tables.indexOf(tablename);
 		for( int i = 0; i < database.Tables.size(); i++)
 		{
-			if( database.Tables.get(i).TableName == tablename )
+			if( database.Tables.get(i).TableName.equals(tablename) )
 			{
 				Index = i;
 			}
@@ -90,9 +90,25 @@ public class API {
 		return true;
 	}
 	
-	public static boolean DropTable( String TableName )
+	public static boolean DropTable( String TableName ) 
 	{
 //		System.out.println("|**** Drop ****|");
+		int Index = -1;// = database.Tables.indexOf(tablename);
+		for( int i = 0; i < database.Tables.size(); i++)
+		{
+			if( database.Tables.get(i).TableName.equals(TableName) )
+			{
+				Index = i;
+			}
+		}
+		if( Index > -1 )
+		{
+			database.Tables.remove(Index);
+		}
+		else
+		{
+			Excep.DropError();
+		}
 		return true;
 	}
 	

@@ -4,6 +4,7 @@ import java.util.Scanner;
 import java.io.IOException;
 
 public class interpreter {
+	private static boolean QUIT_FLAG = false;
 	private static String query="";
 	private static Exception Excep=new Exception();
 	private static DisPreSpace DisSpace=new DisPreSpace();
@@ -13,7 +14,12 @@ public class interpreter {
 		System.out.println("Welcome to the MySQL monitor. Commands end with ;.");
 		System.out.println("Server version: 1.0");
 		System.out.println("Copyright kly. All rights reserved.");
-		inputQuery();
+//		try{
+			inputQuery();
+//		}
+//		catch(IOException e){
+//			;
+//		}
 	}
 	
 	public static void inputQuery() throws IOException{
@@ -36,7 +42,13 @@ public class interpreter {
 				OptionDefine();
 				
 				query="";
-				System.out.print("MiniSQL>>");
+				if( QUIT_FLAG )
+				{
+					System.out.println("Bye!");
+					return;
+				}
+				else
+					System.out.print("MiniSQL>>");
 			}
 			//System.out.println(query);
 		}
@@ -81,7 +93,11 @@ public class interpreter {
 			Option.Drop(rest);
 		else if (option.equalsIgnoreCase("insert")) 
 			Option.Insert(rest);
-        else 
+        else if (option.equalsIgnoreCase("quit"))
+        	QUIT_FLAG = true;
+        else if (option.equalsIgnoreCase("execfile"))
+        	Option.Exec(rest);
+        else
         	Excep.TypeError();
 	}
 }
