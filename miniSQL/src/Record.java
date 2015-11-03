@@ -10,16 +10,22 @@ public class Record {
 	int type=0;//0:int 1:float;2:string
 	int IntSize=0,DouSize=0,StrSize=0;
 	
-	boolean create(String s){
-		if (s.equalsIgnoreCase("INT"))
-			type=0;
-		else if (s.equalsIgnoreCase("FLOAT"))
-			type=1;
-		else if (s.equalsIgnoreCase("STRING"))
-			type=2;
-		else return false;
-		return true;
+	public Record( int Type )
+	{
+		
+		this.type = Type;
+		System.out.println(type+"  " +Type);
 	}
+//	boolean create(String s){
+//		if (s.equalsIgnoreCase("INT"))
+//			type=0;
+//		else if (s.equalsIgnoreCase("FLOAT"))
+//			type=1;
+//		else if (s.equalsIgnoreCase("STRING"))
+//			type=2;
+//		else return false;
+//		return true;
+//	}
 	
 	boolean typejudge(int t){
 		if (t==type) return false;
@@ -38,6 +44,7 @@ public class Record {
 		return true;
 	}
 	boolean add(String s){
+		System.out.println(s);
 		if (typejudge(2)) return false; 
 		Str.add(s);
 		return true;
@@ -68,31 +75,55 @@ public class Record {
 		return true;
 	}
 	
-	boolean drop(int index, int x){
+	boolean drop(int index, int type)
+	{
 		if (typejudge(0)) return false; 
 		if (index>=IntSize){
 			return false;
 		}
-		Int.remove(index);
-		return true;
-	}
-	
-	boolean drop(int index, double f){
-		if (typejudge(1)) return false; 
-		if (index>=DouSize){
-			return false;
+		switch(type){
+			case 0: Int.remove(index); break;
+			case 1: Dou.remove(index); break;
+			case 2: Str.remove(index); break;
+			default: break;
 		}
-		Dou.remove(index);
 		return true;
 	}
 	
-	boolean drop(int index, String s){
-		if (typejudge(2)) return false; 
-		if (index>=StrSize){
-			return false;
+//	boolean drop(int index, int x){
+//		if (typejudge(0)) return false; 
+//		if (index>=IntSize){
+//			return false;
+//		}
+//		Int.remove(index);
+//		return true;
+//	}
+//	
+//	boolean drop(int index, double f){
+//		if (typejudge(1)) return false; 
+//		if (index>=DouSize){
+//			return false;
+//		}
+//		Dou.remove(index);
+//		return true;
+//	}
+//	
+//	boolean drop(int index, String s){
+//		if (typejudge(2)) return false; 
+//		if (index>=StrSize){
+//			return false;
+//		}
+//		Str.remove(index);
+//		return true;
+//	}
+
+	void print(int index, int type)
+	{
+		switch(type){
+		case 0: System.out.print(Int.get(index)); break;
+		case 1: System.out.print(Dou.get(index)); break;
+		case 2: System.out.print(Str.get(index)); break;
+		default: break;
 		}
-		Str.remove(index);
-		return true;
 	}
-	
 }

@@ -291,7 +291,7 @@ public class Opt {
 	
 	//==============================insert================================//
 	
-	void Insert(String s){
+	void Insert(String s) throws NumberFormatException, IOException{
 		String str=DisSpace.dislodge_space(s);
 		String if_into;
 		int into_space;
@@ -467,9 +467,12 @@ public class Opt {
 				}
 				case "float":{
 					Type = 1;
-					if(para2.length()>0){
-						Addit = Integer.parseInt(para2);
-					}
+//decimal:
+//					if(para2.length()>0){
+//						Addit = Integer.parseInt(para2);
+//					}
+//float:
+					Addit = 4;
 					break;
 				}
 				case "string":{
@@ -481,6 +484,8 @@ public class Opt {
 			
 			System.out.println("Tablename:"+tablename+", Name:"+name+", Type:"+Type+", Length:"+Length+", Scale:"+Scale+", Addit:"+Addit+", IfUni:"+IfUnique+", IfPri:"+IfPrimer);
 			API.add_attribute(tablename, name, Type, Length, Scale, Addit, IfUnique, IfPrimer);
+			//这里还add了record 见上面那个函数
+			
 //			System.out.println("tablename:"+tablename+", name:"+name+", type:"+type+", para1:"+para1+", para2:"+para2+", para:"+para);
 			
 		}while (comma!=-1);

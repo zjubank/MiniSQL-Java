@@ -1,30 +1,31 @@
 package miniSQL;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 
 public class RecordManager {
-	String FileName;
+	static String FileName;
 	
-	void GenerateRecordFile(Table t) throws IOException{
+	static void GenerateRecordFile(Table t) throws IOException{
+		System.out.println("*");
 		FileName=t.TableName+".rec";
 		File f=new File (FileName);
-		GeneFile(f);
+		//GeneFile(f);
+		
+		System.out.println("AttriNum:"+t.AttriNum);
 		for (int i=0;i<t.AttriNum;i++){
+			System.out.println("*");
 			WriteFile(t.Records.get(i),t.Attributes.get(i),f);
 		}
 		
 	}
 	
-	void GeneFile(File f) throws IOException{
+	static void GeneFile(File f) throws IOException{
 		if (!f.exists()){
 			f.createNewFile();
 		}
 	}
 	
-	boolean WriteFile(Record Rec,Attribute Att,File f) throws IOException{
+	static boolean WriteFile(Record Rec,Attribute Att,File f) throws IOException{
 		FileWriter fout=new FileWriter(f);
 		if (Rec.type==1){
 			for (int i=0;i<Rec.IntSize;i++){
@@ -62,4 +63,5 @@ public class RecordManager {
 		fout.write("\n");
 		return true;
 	}
+	
 }

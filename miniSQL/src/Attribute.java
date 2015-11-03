@@ -6,9 +6,10 @@ public class Attribute {
 	public String AttributeName="";
 	
 	public int Type		= 0;//int for default
-	public int Length	= 0;
-	public int Scale	= 9;//default as 9
-	public int Addit	=-1;//default as -1
+	public int Length	= 0;//当前记录条数
+	public int Scale	= 9;//Int最大长度(默认为9)
+	public int Addit	= 4;//Double小数点位数(默认为4)
+	public int BolckNum = 0;
 	
 	public boolean IfUnique = false;
 	public boolean IfPrimer = false;

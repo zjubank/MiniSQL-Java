@@ -5,7 +5,9 @@ import java.util.ArrayList;
 
 public class Table {
 	String TableName	= "";
-	int AttriNum			= 0;
+	int AttriNum		= 0;
+	int RowNum			= 0;
+	int BlockNum		= 0;
 	ArrayList<Attribute>	Attributes	= new ArrayList<Attribute>();
 	ArrayList<Record>		Records		= new ArrayList<Record>();
 	
@@ -58,6 +60,13 @@ public class Table {
 		String FileName=TableName+".cat";
 //		System.out.println("|**** Inserc Filepath:"+FileName);
 		FileWriter fout=new FileWriter(FileName);
+		int x=0;
+		for (int i=0;i<AttriNum;i++){
+			x += this.Attributes.get(i).Scale;
+			
+		}
+		x = (int) Math.ceil((double)x/Database.MaxBlock);
+		this.BlockNum = x;
 		fout.write(AttriNum+"\n");
 		for (int i=0;i<AttriNum;i++){
 			fout.write(Attributes.get(i).AttributeName+"\n");
