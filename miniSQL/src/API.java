@@ -97,8 +97,8 @@ public class API {
 			Table output_table = database.Tables.get(Index_Table);
 			
 			if( wherelist == null ){
-				output_table.Records.clear();
-//				temp_table.Attributes.LengthClear();
+//				output_table.Records.clear();
+				OutputTable(output_table);
 				return true;
 			}
 			else{
@@ -124,7 +124,7 @@ public class API {
 										(temp_record.type==2 && !temp_record.Str.get(Index_item).equals(rvar)) )
 										{
 											temp_record.drop(Index_item, temp_record.type);
-											System.out.println("Dropped:"+temp_record+". Type:"+temp_record.type);
+											System.out.println("Selecteded At Index:"+Index_item+". Type:"+temp_record.type);
 										}
 								}
 								break;
@@ -135,7 +135,7 @@ public class API {
 										(temp_record.type==2 && temp_record.Str.get(Index_item).equals(rvar)) )
 										{
 											temp_record.drop(Index_item, temp_record.type);
-											System.out.println("Dropped At Index:"+Index_item+". Type:"+temp_record.type);
+											System.out.println("Selecteded At Index:"+Index_item+". Type:"+temp_record.type);
 										}
 								}
 								break;
@@ -146,7 +146,7 @@ public class API {
 										(temp_record.type==2 && temp_record.Str.get(Index_item).compareTo(rvar)>=0) )
 										{
 											temp_record.drop(Index_item, temp_record.type);
-											System.out.println("Dropped At Index:"+Index_item+". Type:"+temp_record.type);
+											System.out.println("Selecteded At Index:"+Index_item+". Type:"+temp_record.type);
 										}
 								}
 								break;
@@ -157,7 +157,7 @@ public class API {
 										(temp_record.type==2 && temp_record.Str.get(Index_item).compareTo(rvar)<=0) )
 										{
 											temp_record.drop(Index_item, temp_record.type);
-											System.out.println("Dropped At Index:"+Index_item+". Type:"+temp_record.type);
+											System.out.println("Selecteded At Index:"+Index_item+". Type:"+temp_record.type);
 										}
 								}
 								break;
@@ -179,7 +179,7 @@ public class API {
 										(temp_record.type==2 && temp_record.Str.get(Index_item).compareTo(rvar)<0) )
 										{
 											temp_record.drop(Index_item, temp_record.type);
-											System.out.println("Dropped At Index:"+Index_item+". Type:"+temp_record.type);
+											System.out.println("Selecteded At Index:"+Index_item+". Type:"+temp_record.type);
 										}
 								}
 								break;
@@ -213,10 +213,10 @@ public class API {
 		
 		for( int Index_Row = 0; Index_Row < output_table.RowNum; Index_Row++ )
 		{
-			int Type = output_table.Attributes.get(Index_Row).Type;
 			for( int Index_Attri = 0; Index_Attri < output_table.AttriNum; Index_Attri++ )
 			{
-				output_table.Records.get(Index_Attri).print(Index_Attri, Type);
+				int Type = output_table.Attributes.get(Index_Attri).Type;
+				output_table.Records.get(Index_Attri).print(Index_Row, Type);
 //				System.out +\t
 			}
 			System.out.println("");
@@ -253,26 +253,40 @@ public class API {
 			else{
 				//wherelist.lvars.size()次筛选，每次筛选都要遍历所有Attri，以及Attri中的item
 				//一个函数确定是否符合wherelist规定，如果为否直接删除
+				
+				//对WhereList中所有条件对查验
 				for( int Index_Vars = 0; Index_Vars < wherelist.lvars.size(); Index_Vars++ )
 				{
 					String lvar = wherelist.lvars.get(Index_Vars);
 					String rvar = wherelist.rvars.get(Index_Vars);
 					String sign = wherelist.signs.get(Index_Vars);
+					
+					//对每个Attribute从上到下搜索
 					for( int Index_Attri = 0; Index_Attri < temp_table.AttriNum; Index_Attri++ )
 					{
 						Attribute temp_attri = temp_table.Attributes.get(Index_Attri);
-						Record temp_record = temp_table.Records.get(Index_Attri); 
+						Record temp_record = temp_table.Records.get(Index_Attri);
+						
+						//从上到下搜索部分
 						for( int Index_item = 0; Index_item < temp_attri.Length; Index_item++ )
 						{
 							switch(sign)
 							{
 							case "=": 
+//								System.out.println("Match condition:"+lvar+sign+rvar);
+//								System.out.println("At:"+Index_Attri+","+Index_item);
+//								System.out.println("This Attri:"+temp_attri.AttributeName);
+//								System.out.println("lvar:"+lvar);
 								if( temp_attri.AttributeName.equals(lvar) ){
+									System.out.println("Match lvar at Attri:"+Index_Attri+", Row:"+Index_item);
 									if( (temp_record.type==0 && temp_record.Int.get(Index_item) == Integer.parseInt(rvar) ) ||
 										(temp_record.type==1 && temp_record.Dou.get(Index_item) == Double.parseDouble(rvar) ) ||
 										(temp_record.type==2 && temp_record.Str.get(Index_item).equals(rvar)) )
 										{
-											temp_record.drop(Index_item, temp_record.type);
+											boolean result = temp_record.drop(Index_item, temp_record.type);
+											System.out.println(result);
+											System.out.println("Dropped "+rvar+" Typed "+temp_record.type);
+											System.out.println("At Attri:"+Index_Attri+", Row:"+Index_item);
 										}
 								}
 								break;
@@ -283,6 +297,8 @@ public class API {
 										(temp_record.type==2 && !temp_record.Str.get(Index_item).equals(rvar)) )
 										{
 											temp_record.drop(Index_item, temp_record.type);
+											System.out.println("Dropped "+rvar+" Typed "+temp_record.type);
+											System.out.println("At Attri:"+Index_Attri+", Row:"+Index_item);
 										}
 								}
 								break;
@@ -293,6 +309,8 @@ public class API {
 										(temp_record.type==2 && temp_record.Str.get(Index_item).compareTo(rvar)<0) )
 										{
 											temp_record.drop(Index_item, temp_record.type);
+											System.out.println("Dropped "+rvar+" Typed "+temp_record.type);
+											System.out.println("At Attri:"+Index_Attri+", Row:"+Index_item);
 										}
 								}
 								break;
@@ -303,6 +321,8 @@ public class API {
 										(temp_record.type==2 && temp_record.Str.get(Index_item).compareTo(rvar)>0) )
 										{
 											temp_record.drop(Index_item, temp_record.type);
+											System.out.println("Dropped "+rvar+" Typed "+temp_record.type);
+											System.out.println("At Attri:"+Index_Attri+", Row:"+Index_item);
 										}
 								}
 								break;
@@ -313,6 +333,8 @@ public class API {
 										(temp_record.type==2 && temp_record.Str.get(Index_item).compareTo(rvar)<=0) )
 										{
 											temp_record.drop(Index_item, temp_record.type);
+											System.out.println("Dropped "+rvar+" Typed "+temp_record.type);
+											System.out.println("At Attri:"+Index_Attri+", Row:"+Index_item);
 										}
 								}
 								break;
@@ -323,6 +345,8 @@ public class API {
 										(temp_record.type==2 && temp_record.Str.get(Index_item).compareTo(rvar)>=0) )
 										{
 											temp_record.drop(Index_item, temp_record.type);
+											System.out.println("Dropped "+rvar+" Typed "+temp_record.type);
+											System.out.println("At Attri:"+Index_Attri+", Row:"+Index_item);
 										}
 								}
 								break;

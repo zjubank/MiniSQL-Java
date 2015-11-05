@@ -36,18 +36,21 @@ public class Record {
 	boolean add(int x){
 		if (typejudge(0)) return false; 
 		Int.add(x);
+		IntSize++;
 		return true;
 	}
 	
 	boolean add(double f){
 		if (typejudge(1)) return false; 
 		Dou.add(f);
+		DouSize++;
 		return true;
 	}
 	boolean add(String s){
 		System.out.println(s);
 		if (typejudge(2)) return false; 
 		Str.add(s);
+		StrSize++;
 		return true;
 	}
 	
@@ -78,14 +81,14 @@ public class Record {
 	
 	boolean drop(int index, int type)
 	{
-		if (typejudge(0)) return false; 
-		if (index>=IntSize){
+//		if (typejudge(0)) return false; 
+		if (index>IntSize){
 			return false;
 		}
 		switch(type){
-			case 0: Int.remove(index); break;
-			case 1: Dou.remove(index); break;
-			case 2: Str.remove(index); break;
+			case 0: Int.remove(index); IntSize--; break;
+			case 1: Dou.remove(index); DouSize--; break;
+			case 2: Str.remove(index); StrSize--; break;
 			default: break;
 		}
 		return true;
@@ -120,10 +123,11 @@ public class Record {
 
 	void print(int index, int type)
 	{
-		switch(type){
-		case 0: System.out.print(Int.get(index)); break;
-		case 1: System.out.print(Dou.get(index)); break;
-		case 2: System.out.print(Str.get(index)); break;
+		switch(type)
+		{
+		case 0: System.out.print(Int.get(index)+"\t"); break;
+		case 1: System.out.print(Dou.get(index)+"\t"); break;
+		case 2: System.out.print(Str.get(index)+"\t"); break;
 		default: break;
 		}
 	}

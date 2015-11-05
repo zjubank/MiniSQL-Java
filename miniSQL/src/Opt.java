@@ -162,6 +162,8 @@ public class Opt {
 		
 		WhereList wherelist = null;
 		where_pos=after_from.indexOf("where");
+		System.out.println("＝After_from:"+after_from); 
+		System.out.println("＝After_where:"+after_where); 
 		if (where_pos!=-1) {
 			after_where=after_from.substring(where_pos+5);
 			System.out.println("After_from:"+after_from); 
@@ -248,12 +250,14 @@ public class Opt {
 			Excep.DeleteError();
 			return;
 		}
+		
 		where_place=after_from.indexOf("where");
+
 		if (where_place!=-1){
 			table_name=after_from.substring(0,where_place);
 			after_where=after_from.substring(where_place);
 			table_name=DisSpace.dislodge_space(table_name);
-			after_where=DisSpace.dislodge_space(after_where);
+			after_where=after_from.substring(where_place+5);
 			//operate(table_name);
 			System.out.println(table_name);
 			wherelist = Split_Where_Orders(after_where);
@@ -616,6 +620,9 @@ public class Opt {
 			wherelist.lvars.add(wherecombine.lvar);
 			wherelist.rvars.add(wherecombine.rvar);
 			wherelist.signs.add(wherecombine.sign);
+			System.out.println("=Split lvar:"+wherecombine.lvar);
+			System.out.println("=Splic sign:"+wherecombine.sign);
+			System.out.println("=Splic rvar:"+wherecombine.rvar);
 		}while(comma!=-1); 
 		return wherelist;
 	}
@@ -634,11 +641,12 @@ public class Opt {
 				rvar=str.substring(sign_pos+sign_list[i].length());
 				lvar=DisSpace.dislodge_space(lvar);
 				rvar=DisSpace.dislodge_space(rvar);
-				System.out.println("Loop"+i+"|"+"lvar:"+lvar+", rvar:"+rvar+", sign:"+sign_list[i]);
+				rvar = rvar.replace("'", "");
+				System.out.println("lvar:"+lvar+", rvar:"+rvar+", sign:"+sign_list[i]);
 				//operate (lvar,rvar,sign);
 			}
 		}
-		System.out.println("ReturnTimes+1");
+//		System.out.println("ReturnTimes+1");
 		WhereCombine wherecombine = new WhereCombine(lvar, rvar, sign);
 		return wherecombine;
 	}
