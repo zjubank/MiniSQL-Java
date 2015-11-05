@@ -122,7 +122,10 @@ public class API {
 									if( (temp_record.type==0 && temp_record.Int.get(Index_item) != Integer.parseInt(rvar) ) ||
 										(temp_record.type==1 && temp_record.Dou.get(Index_item) != Double.parseDouble(rvar) ) ||
 										(temp_record.type==2 && !temp_record.Str.get(Index_item).equals(rvar)) )
-										temp_record.drop(Index_item, temp_record.type);
+										{
+											temp_record.drop(Index_item, temp_record.type);
+											System.out.println("Dropped:"+temp_record+". Type:"+temp_record.type);
+										}
 								}
 								break;
 							case "<>": 
@@ -130,7 +133,10 @@ public class API {
 									if( (temp_record.type==0 && temp_record.Int.get(Index_item) == Integer.parseInt(rvar) ) ||
 										(temp_record.type==1 && temp_record.Dou.get(Index_item) == Double.parseDouble(rvar) ) ||
 										(temp_record.type==2 && temp_record.Str.get(Index_item).equals(rvar)) )
-										temp_record.drop(Index_item, temp_record.type);
+										{
+											temp_record.drop(Index_item, temp_record.type);
+											System.out.println("Dropped At Index:"+Index_item+". Type:"+temp_record.type);
+										}
 								}
 								break;
 							case "<":
@@ -138,7 +144,10 @@ public class API {
 									if( (temp_record.type==0 && temp_record.Int.get(Index_item) >= Integer.parseInt(rvar) ) ||
 										(temp_record.type==1 && temp_record.Dou.get(Index_item) >= Double.parseDouble(rvar) ) ||
 										(temp_record.type==2 && temp_record.Str.get(Index_item).compareTo(rvar)>=0) )
-										temp_record.drop(Index_item, temp_record.type);
+										{
+											temp_record.drop(Index_item, temp_record.type);
+											System.out.println("Dropped At Index:"+Index_item+". Type:"+temp_record.type);
+										}
 								}
 								break;
 							case ">":
@@ -146,7 +155,10 @@ public class API {
 									if( (temp_record.type==0 && temp_record.Int.get(Index_item) <= Integer.parseInt(rvar) ) ||
 										(temp_record.type==1 && temp_record.Dou.get(Index_item) <= Double.parseDouble(rvar) ) ||
 										(temp_record.type==2 && temp_record.Str.get(Index_item).compareTo(rvar)<=0) )
-										temp_record.drop(Index_item, temp_record.type);
+										{
+											temp_record.drop(Index_item, temp_record.type);
+											System.out.println("Dropped At Index:"+Index_item+". Type:"+temp_record.type);
+										}
 								}
 								break;
 							case "<=": 
@@ -154,7 +166,10 @@ public class API {
 									if( (temp_record.type==0 && temp_record.Int.get(Index_item) > Integer.parseInt(rvar) ) ||
 										(temp_record.type==1 && temp_record.Dou.get(Index_item) > Double.parseDouble(rvar) ) ||
 										(temp_record.type==2 && temp_record.Str.get(Index_item).compareTo(rvar)>0) )
-										temp_record.drop(Index_item, temp_record.type);
+										{
+											temp_record.drop(Index_item, temp_record.type);
+											System.out.println("Dropped At Index:"+Index_item+". Type:"+temp_record.type);
+										}
 								}
 								break;
 							case ">=": 
@@ -162,7 +177,10 @@ public class API {
 									if( (temp_record.type==0 && temp_record.Int.get(Index_item) < Integer.parseInt(rvar) ) ||
 										(temp_record.type==1 && temp_record.Dou.get(Index_item) < Double.parseDouble(rvar) ) ||
 										(temp_record.type==2 && temp_record.Str.get(Index_item).compareTo(rvar)<0) )
-										temp_record.drop(Index_item, temp_record.type);
+										{
+											temp_record.drop(Index_item, temp_record.type);
+											System.out.println("Dropped At Index:"+Index_item+". Type:"+temp_record.type);
+										}
 								}
 								break;
 							}
@@ -189,7 +207,7 @@ public class API {
 		
 		for( int Index_Attri = 0; Index_Attri < output_table.AttriNum; Index_Attri++ )
 		{
-			System.out.print(output_table.Attributes.get(Index_Attri).AttributeName);
+			System.out.print(output_table.Attributes.get(Index_Attri).AttributeName+"\t");
 		}
 		System.out.println("");
 		
@@ -199,6 +217,7 @@ public class API {
 			for( int Index_Attri = 0; Index_Attri < output_table.AttriNum; Index_Attri++ )
 			{
 				output_table.Records.get(Index_Attri).print(Index_Attri, Type);
+//				System.out +\t
 			}
 			System.out.println("");
 		}
@@ -252,7 +271,9 @@ public class API {
 									if( (temp_record.type==0 && temp_record.Int.get(Index_item) == Integer.parseInt(rvar) ) ||
 										(temp_record.type==1 && temp_record.Dou.get(Index_item) == Double.parseDouble(rvar) ) ||
 										(temp_record.type==2 && temp_record.Str.get(Index_item).equals(rvar)) )
-										temp_record.drop(Index_item, temp_record.type);
+										{
+											temp_record.drop(Index_item, temp_record.type);
+										}
 								}
 								break;
 							case "<>": 
@@ -260,7 +281,9 @@ public class API {
 									if( (temp_record.type==0 && temp_record.Int.get(Index_item) != Integer.parseInt(rvar) ) ||
 										(temp_record.type==1 && temp_record.Dou.get(Index_item) != Double.parseDouble(rvar) ) ||
 										(temp_record.type==2 && !temp_record.Str.get(Index_item).equals(rvar)) )
-										temp_record.drop(Index_item, temp_record.type);
+										{
+											temp_record.drop(Index_item, temp_record.type);
+										}
 								}
 								break;
 							case "<":
@@ -268,7 +291,9 @@ public class API {
 									if( (temp_record.type==0 && temp_record.Int.get(Index_item) < Integer.parseInt(rvar) ) ||
 										(temp_record.type==1 && temp_record.Dou.get(Index_item) < Double.parseDouble(rvar) ) ||
 										(temp_record.type==2 && temp_record.Str.get(Index_item).compareTo(rvar)<0) )
-										temp_record.drop(Index_item, temp_record.type);
+										{
+											temp_record.drop(Index_item, temp_record.type);
+										}
 								}
 								break;
 							case ">":
@@ -276,7 +301,9 @@ public class API {
 									if( (temp_record.type==0 && temp_record.Int.get(Index_item) > Integer.parseInt(rvar) ) ||
 										(temp_record.type==1 && temp_record.Dou.get(Index_item) > Double.parseDouble(rvar) ) ||
 										(temp_record.type==2 && temp_record.Str.get(Index_item).compareTo(rvar)>0) )
-										temp_record.drop(Index_item, temp_record.type);
+										{
+											temp_record.drop(Index_item, temp_record.type);
+										}
 								}
 								break;
 							case "<=": 
@@ -284,7 +311,9 @@ public class API {
 									if( (temp_record.type==0 && temp_record.Int.get(Index_item) <= Integer.parseInt(rvar) ) ||
 										(temp_record.type==1 && temp_record.Dou.get(Index_item) <= Double.parseDouble(rvar) ) ||
 										(temp_record.type==2 && temp_record.Str.get(Index_item).compareTo(rvar)<=0) )
-										temp_record.drop(Index_item, temp_record.type);
+										{
+											temp_record.drop(Index_item, temp_record.type);
+										}
 								}
 								break;
 							case ">=": 
@@ -292,7 +321,9 @@ public class API {
 									if( (temp_record.type==0 && temp_record.Int.get(Index_item) >= Integer.parseInt(rvar) ) ||
 										(temp_record.type==1 && temp_record.Dou.get(Index_item) >= Double.parseDouble(rvar) ) ||
 										(temp_record.type==2 && temp_record.Str.get(Index_item).compareTo(rvar)>=0) )
-										temp_record.drop(Index_item, temp_record.type);
+										{
+											temp_record.drop(Index_item, temp_record.type);
+										}
 								}
 								break;
 							}
@@ -358,6 +389,8 @@ public class API {
 
 		while( Values[Index_ValueNo] != null )
 		{
+			System.out.println("=ValuesNo."+Index_ValueNo+". Valuse:"+Values[Index_ValueNo]);
+			System.out.println("=Type: "+database.Tables.get(Index_Table).Attributes.get(Index_ValueNo).Type);
 			//表已经匹配，和Values对应的Record（也就是Attribute）依次赋值
 			switch(database.Tables.get(Index_Table).Attributes.get(Index_ValueNo).Type)
 			{
@@ -384,8 +417,8 @@ public class API {
 					System.out.println("Add Int Success: "+temp_int);
 					temp_attri.Length++;
 //					System.out.println("Records Value:"+temp_table.Records.get(Index_ValueNo).Int.get(0));
-					temp_table.Records.add(Index_ValueNo,temp_record);
-					temp_table.Attributes.add(Index_ValueNo, temp_attri);
+					temp_table.Records.set(Index_ValueNo,temp_record);
+					temp_table.Attributes.set(Index_ValueNo, temp_attri);
 					
 					break;
 				}
@@ -414,8 +447,8 @@ public class API {
 					}
 					System.out.println("Add Double Success: "+temp_double);
 					temp_attri.Length++;
-					temp_table.Records.add(Index_ValueNo,temp_record);
-					temp_table.Attributes.add(Index_ValueNo, temp_attri);
+					temp_table.Records.set(Index_ValueNo,temp_record);
+					temp_table.Attributes.set(Index_ValueNo, temp_attri);
 					
 					break;
 				}
@@ -460,6 +493,9 @@ public class API {
 		System.out.println("Table Added OK!");
 //		System.out.println("!!!"+database.Tables.get(Index_Table).Records.get(0).Str.get(0));
 		RecordManager1.GenerateRecordFile(temp_table);
+		
+		RecordManager1.ReadFile(temp_table.TableName);
+		
 		return true;
 	}
 	

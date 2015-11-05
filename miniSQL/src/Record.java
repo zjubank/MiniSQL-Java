@@ -3,6 +3,7 @@ package miniSQL;
 import java.util.ArrayList;
 
 public class Record {
+	//一个Record是一列
 	String TableName="";
 	ArrayList<Integer>	Int=new ArrayList<Integer>();
 	ArrayList<Double>	Dou=new ArrayList<Double>();

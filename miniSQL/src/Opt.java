@@ -172,7 +172,15 @@ public class Opt {
 		else {
 			//select(names,) 
 		}
-		TableName = after_from.substring(0, where_pos);
+		
+		if( where_pos == -1 )
+		{
+			TableName = after_from;
+		}
+		else
+		{
+			TableName = after_from.substring(0, where_pos);
+		}
 		TableName = TableName.trim();
 		System.out.println("TableName:"+ TableName);
 		API.Select(TableName, wherelist);
@@ -472,7 +480,7 @@ public class Opt {
 //						Addit = Integer.parseInt(para2);
 //					}
 //float:
-					Addit = 4;
+					Addit = 2;
 					break;
 				}
 				case "string":{

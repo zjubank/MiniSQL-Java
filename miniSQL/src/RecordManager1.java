@@ -132,7 +132,7 @@ public class RecordManager1 {
 	public static String writeString(String record, int maxlength) {
 		for( int i = record.length(); i < maxlength; i++)
 		{
-			record += "'";
+			record += '\1';
 		}
 		return record;
 	}
@@ -143,6 +143,146 @@ public class RecordManager1 {
 //		}
 //	}
 	
+	public static boolean ReadFile(String tablename) throws IOException
+	{
+		Table temp_table = new Table(tablename);
+		
+		String RFileName = tablename + ".rec";
+		FileInputStream Rfile = new FileInputStream(RFileName);
+		InputStreamReader Rfin = new InputStreamReader(Rfile);
+		BufferedReader Rbin = new BufferedReader(Rfin);
+		
+		
+		String CFileName = tablename + ".cat";
+		FileInputStream Cfile = new FileInputStream(CFileName);
+		InputStreamReader Cfin = new InputStreamReader(Cfile);
+		BufferedReader Cbin = new BufferedReader(Cfin);
+		
+		String str = "";
+		
+		int Counter = -1;
+		while( (str = Cbin.readLine()) != null )
+		{
+//			System.out.println("CReadFile: "+str);
+			if( Counter == -1 )
+			{
+				temp_table.AttriNum = Integer.parseInt(str);
+//				System.out.println("AttriNum:"+temp_table.AttriNum);
+				Counter++;
+				continue;
+			}
+			
+//			str = Cbin.readLine();
+			String AttriName = str;
+//			System.out.println("AttriName:"+AttriName);
+			
+			str = Cbin.readLine();
+			int Type = Integer.parseInt(str);
+//			System.out.println("Type:"+Type);
+			
+			str = Cbin.readLine();
+			int Length = Integer.parseInt(str);
+//			System.out.println("Length:"+Length);
+			
+			str = Cbin.readLine();
+			int Scale = Integer.parseInt(str);
+//			System.out.println("Scale:"+Scale);
+			
+			str = Cbin.readLine();
+			int Addit = Integer.parseInt(str);
+//			System.out.println("Addit:"+Addit);
+			
+			str = Cbin.readLine();
+			boolean IfUnique = Boolean.parseBoolean(str);
+//			System.out.println("IfUnique:"+IfUnique);
+			
+			str = Cbin.readLine();
+			boolean IfPrimer = Boolean.parseBoolean(str);
+//			System.out.println("IfPrimer:"+IfPrimer);
+			
+			System.out.println("Tablename:"+tablename+", Name:"+AttriName+", Type:"+Type+", Length:"+Length+", Scale:"+Scale+", Addit:"+Addit+", IfUni:"+IfUnique+", IfPri:"+IfPrimer);
+
+			Attribute temp_attri = new Attribute(AttriName, Type, Length, Scale, Addit, IfUnique, IfPrimer);
+			temp_table.Attributes.add(temp_attri);
+			
+			Counter++;
+		}
+		
+		Counter = 0;
+		while( (str = Rbin.readLine()) != null )
+		{
+			int AttriNum = temp_table.AttriNum;
+			
+//			String temp_str = str;
+			for( int i = 0; i < AttriNum; i++ )
+			{
+				switch(temp_table.Attributes.get(i).Type)
+				{
+				case 0:
+					String temp_part_int = str.substring(0,11);
+//					System.out.println("temp_part_int:"+temp_part_int);
+					String positiveflag_int = temp_part_int.substring(0,1);
+					String last_int = temp_part_int.substring(1, 11);
+//					System.out.println("last_int:"+last_int);
+					int temp_int = Integer.parseInt(last_int);
+					if( positiveflag_int.equals("0") )
+					{
+						temp_int = - temp_int;
+					}
+					str = str.substring(11);
+					
+					System.out.println("->"+temp_int);
+					System.out.println("-->"+str);
+					//这里需要写入
+					Record temp_record_int = new Record(0);
+					temp_table.Records.add(temp_record_int);
+					temp_record_int.Int.add(temp_int);
+					temp_table.Records.set(i, temp_record_int);
+					break;
+				case 1:
+					String temp_part_dou = str.substring(0,11);
+					String positiveflag_dou = temp_part_dou.substring(0, 1);
+					String last_dou = temp_part_dou.substring(1, 11);
+					double temp_dou = Double.parseDouble(last_dou);
+					temp_dou /= 100;
+					if( positiveflag_dou.equals("0") )
+					{
+						temp_dou = - temp_dou;
+					}
+					str = str.substring(temp_part_dou.length());
+					
+					System.out.println("->"+temp_dou);
+					System.out.println("-->"+str);
+					//这里需要写入
+					Record temp_record_dou = new Record(1);
+					temp_table.Records.add(temp_record_dou);
+					temp_record_dou.Dou.add(temp_dou);
+					temp_table.Records.set(i, temp_record_dou);
+					break;
+				case 2:
+					String temp_part_str = str.substring(0, temp_table.Attributes.get(i).Scale);
+					int endpos = temp_part_str.indexOf("\1");
+					String temp_str = temp_part_str.substring(0,endpos);
+					str = str.substring(temp_part_str.length());
+					
+					System.out.println("->"+temp_str);
+					System.out.println("-->Last:"+str);
+					//这里需要写入
+					Record temp_record_str = new Record(2);
+					temp_table.Records.add(temp_record_str);
+					temp_record_str.Str.add(temp_str);
+					temp_table.Records.set(i, temp_record_str);
+					break;
+				default:
+					System.out.println("Unkown Type!");
+					break;
+				}
+			}
+			
+			Counter++;
+		}
+		return true;
+	}
 //
 //	boolean ReadFile(Table t, File f) throws IOException{
 //		FileInputStream file=new FileInputStream(FileName);

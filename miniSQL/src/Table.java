@@ -70,8 +70,10 @@ public class Table {
 		fout.write(AttriNum+"\n");
 		for (int i=0;i<AttriNum;i++){
 			fout.write(Attributes.get(i).AttributeName+"\n");
-			fout.write(Attributes.get(i).Length+"\n");
 			fout.write(Attributes.get(i).Type+"\n");
+			fout.write(Attributes.get(i).Length+"\n");
+			fout.write(Attributes.get(i).Scale+"\n");
+			fout.write(Attributes.get(i).Addit+"\n");
 			fout.write(Attributes.get(i).IfUnique+"\n");
 			fout.write(Attributes.get(i).IfPrimer+"\n");
 		}
