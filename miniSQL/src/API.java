@@ -109,9 +109,16 @@ public class API {
 					String lvar = wherelist.lvars.get(Index_Vars);
 					String rvar = wherelist.rvars.get(Index_Vars);
 					String sign = wherelist.signs.get(Index_Vars);
+					
+					System.out.println("=>AttriNum:"+output_table.AttriNum);
 					for( int Index_Attri = 0; Index_Attri < output_table.AttriNum; Index_Attri++ )
 					{
 						Attribute temp_attri = output_table.Attributes.get(Index_Attri);
+						if( output_table.Records.isEmpty() )
+						{
+							OutputTable(output_table);
+							return true;
+						}
 						Record temp_record = output_table.Records.get(Index_Attri); 
 						for( int Index_item = 0; Index_item < temp_attri.Length; Index_item++ )
 						{
@@ -229,7 +236,7 @@ public class API {
 		return true;
 	}
 	
-	public static boolean Detele( String TableName, WhereList wherelist )
+	public static boolean Detele( String TableName, WhereList wherelist ) throws IOException
 	{
 //		System.out.println("|**** Delete ****|");
 		int Index_Table = -1;// = database.Tables.indexOf(tablename);
@@ -251,6 +258,12 @@ public class API {
 				return true;
 			}
 			else{
+				
+				boolean[] deleteflag = new boolean[temp_table.RowNum];
+				for( boolean ini : deleteflag )
+				{
+					ini = false;
+				}
 				//wherelist.lvars.size()次筛选，每次筛选都要遍历所有Attri，以及Attri中的item
 				//一个函数确定是否符合wherelist规定，如果为否直接删除
 				
@@ -283,10 +296,12 @@ public class API {
 										(temp_record.type==1 && temp_record.Dou.get(Index_item) == Double.parseDouble(rvar) ) ||
 										(temp_record.type==2 && temp_record.Str.get(Index_item).equals(rvar)) )
 										{
-											boolean result = temp_record.drop(Index_item, temp_record.type);
-											System.out.println(result);
-											System.out.println("Dropped "+rvar+" Typed "+temp_record.type);
-											System.out.println("At Attri:"+Index_Attri+", Row:"+Index_item);
+											deleteflag[Index_item] = true;
+											System.out.println("Delete at Attri:"+Index_Attri+", Row:"+Index_item);
+//											boolean result = temp_record.drop(Index_item, temp_record.type);
+//											System.out.println(result);
+//											System.out.println("Dropped "+rvar+" Typed "+temp_record.type);
+//											System.out.println("At Attri:"+Index_Attri+", Row:"+Index_item);
 										}
 								}
 								break;
@@ -296,9 +311,11 @@ public class API {
 										(temp_record.type==1 && temp_record.Dou.get(Index_item) != Double.parseDouble(rvar) ) ||
 										(temp_record.type==2 && !temp_record.Str.get(Index_item).equals(rvar)) )
 										{
-											temp_record.drop(Index_item, temp_record.type);
-											System.out.println("Dropped "+rvar+" Typed "+temp_record.type);
-											System.out.println("At Attri:"+Index_Attri+", Row:"+Index_item);
+											deleteflag[Index_item] = true;
+											System.out.println("Delete at Attri:"+Index_Attri+", Row:"+Index_item);
+//											temp_record.drop(Index_item, temp_record.type);
+//											System.out.println("Dropped "+rvar+" Typed "+temp_record.type);
+//											System.out.println("At Attri:"+Index_Attri+", Row:"+Index_item);
 										}
 								}
 								break;
@@ -308,9 +325,12 @@ public class API {
 										(temp_record.type==1 && temp_record.Dou.get(Index_item) < Double.parseDouble(rvar) ) ||
 										(temp_record.type==2 && temp_record.Str.get(Index_item).compareTo(rvar)<0) )
 										{
-											temp_record.drop(Index_item, temp_record.type);
-											System.out.println("Dropped "+rvar+" Typed "+temp_record.type);
-											System.out.println("At Attri:"+Index_Attri+", Row:"+Index_item);
+											deleteflag[Index_item] = true;
+											System.out.println("Delete at Attri:"+Index_Attri+", Row:"+Index_item);
+
+//											temp_record.drop(Index_item, temp_record.type);
+//											System.out.println("Dropped "+rvar+" Typed "+temp_record.type);
+//											System.out.println("At Attri:"+Index_Attri+", Row:"+Index_item);
 										}
 								}
 								break;
@@ -320,9 +340,12 @@ public class API {
 										(temp_record.type==1 && temp_record.Dou.get(Index_item) > Double.parseDouble(rvar) ) ||
 										(temp_record.type==2 && temp_record.Str.get(Index_item).compareTo(rvar)>0) )
 										{
-											temp_record.drop(Index_item, temp_record.type);
-											System.out.println("Dropped "+rvar+" Typed "+temp_record.type);
-											System.out.println("At Attri:"+Index_Attri+", Row:"+Index_item);
+											deleteflag[Index_item] = true;
+											System.out.println("Delete at Attri:"+Index_Attri+", Row:"+Index_item);
+
+//											temp_record.drop(Index_item, temp_record.type);
+//											System.out.println("Dropped "+rvar+" Typed "+temp_record.type);
+//											System.out.println("At Attri:"+Index_Attri+", Row:"+Index_item);
 										}
 								}
 								break;
@@ -332,9 +355,12 @@ public class API {
 										(temp_record.type==1 && temp_record.Dou.get(Index_item) <= Double.parseDouble(rvar) ) ||
 										(temp_record.type==2 && temp_record.Str.get(Index_item).compareTo(rvar)<=0) )
 										{
-											temp_record.drop(Index_item, temp_record.type);
-											System.out.println("Dropped "+rvar+" Typed "+temp_record.type);
-											System.out.println("At Attri:"+Index_Attri+", Row:"+Index_item);
+											deleteflag[Index_item] = true;
+											System.out.println("Delete at Attri:"+Index_Attri+", Row:"+Index_item);
+
+//											temp_record.drop(Index_item, temp_record.type);
+//											System.out.println("Dropped "+rvar+" Typed "+temp_record.type);
+//											System.out.println("At Attri:"+Index_Attri+", Row:"+Index_item);
 										}
 								}
 								break;
@@ -344,19 +370,42 @@ public class API {
 										(temp_record.type==1 && temp_record.Dou.get(Index_item) >= Double.parseDouble(rvar) ) ||
 										(temp_record.type==2 && temp_record.Str.get(Index_item).compareTo(rvar)>=0) )
 										{
-											temp_record.drop(Index_item, temp_record.type);
-											System.out.println("Dropped "+rvar+" Typed "+temp_record.type);
-											System.out.println("At Attri:"+Index_Attri+", Row:"+Index_item);
+											deleteflag[Index_item] = true;
+											System.out.println("Delete at Attri:"+Index_Attri+", Row:"+Index_item);
+
+//											temp_record.drop(Index_item, temp_record.type);
+//											System.out.println("Dropped "+rvar+" Typed "+temp_record.type);
+//											System.out.println("At Attri:"+Index_Attri+", Row:"+Index_item);
 										}
 								}
 								break;
 							}
 						}
-						temp_table.Attributes.set(Index_Attri, temp_attri);
-						temp_table.Records.set(Index_Attri, temp_record);
+//						temp_table.Attributes.set(Index_Attri, temp_attri);
+//						temp_table.Records.set(Index_Attri, temp_record);
 					}
 				}
-				database.Tables.set(Index_Table, temp_table);
+				
+				Table new_table = new Table(TableName);
+				new_table.AttriNum = temp_table.AttriNum;
+				for( int i = 0; i < temp_table.AttriNum; i++ )
+				{
+					Attribute new_Attri=temp_table.Attributes.get(i);
+					System.out.println("kmtest"+new_Attri.AttributeName);
+					new_table.Attributes.add(new_Attri);
+					System.out.println("=>"+new_table.Attributes.get(i).AttributeName);
+
+				}
+				for( int i = 0; i < temp_table.RowNum; i++ )
+				{
+					if( deleteflag[i] == false )
+					{
+						new_table.Records.add(temp_table.Records.get(i));
+						new_table.RowNum++;
+					}
+				}
+				database.Tables.set(Index_Table, new_table);
+				System.out.println(new_table);
 			}
 		}
 		return true;

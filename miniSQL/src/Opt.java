@@ -232,7 +232,7 @@ public class Opt {
 	
 	//=============================delete=================================//
 	
-	void Delete(String s){
+	void Delete(String s) throws IOException{
 		String str=DisSpace.dislodge_space(s);
 		WhereList wherelist = null;
 		int from_space_place=str.indexOf(" ");
