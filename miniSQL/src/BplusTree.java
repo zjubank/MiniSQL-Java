@@ -1,5 +1,8 @@
 package miniSQL;
 
+import java.io.*;
+import java.util.Arrays;
+
 public class BplusTree {
 	
 	public static final int PointerLength = 4;
@@ -9,29 +12,56 @@ public class BplusTree {
 	private int MaxIndex;
 	public String filename;
 	private Index index;
-	private Buffer Root; //根buffer块
+	Buffer Root; //根buffer块
 	
 	public BplusTree(Index index){
 		/* 加入文件的建立？*/
-
+		try{	
+			 filename = index.IndexName + ".index";
+			 PrintWriter out = new PrintWriter( new BufferedWriter(new FileWriter(new File(filename))));
+			 //out.write("#@0\r\n#&0\r\n");
+			 out.close();
+		}catch(IOException e){
+			 System.err.println("create index failed !");
+	    }
+		//System.out.println("in B+tree");
+		this.index = index;
 		/*一个block能够放下多少个index*/
-		MaxIndex=(int)Math.floor((4096.0-1/*叶子标记为是leaf还是internal node*/-4/*有多少个索引键*/-PointerLength/*父亲块号*/-PointerLength/*兄弟块的块号*/)/(8+index.Size));
+		MaxIndex=(int)Math.floor(((double)Buffer.Maxbyte - 1/*叶子标记为是leaf还是internal node*/-4/*有多少个索引键*/-PointerLength/*父亲块号*/-PointerLength/*兄弟块的块号*/)/(8+index.Size));
 		MinIndex=(int)Math.ceil(1.0 * MaxIndex/ 2);
-		Max = MaxIndex; //一个block能放下多少index根据设定B+树的序数。
-		Min = (int)Math.ceil(1.0 * Max/ 2);
+		
+		Max = MaxIndex - 1; //一个block能放下多少index根据设定B+树的序数。
+		Min = (int)Math.ceil(1.0 * MaxIndex/ 2) - 1;
+		
+		System.out.println("MaxIndex = "+MaxIndex+" MinIndex = "+ MinIndex +" Max = "+ Max +" Min = "+ Min);
+		new LeafNode(Root = BufferManager.create(filename,0), false);
+		
 	}
 	
+	public BplusTree(Index index, BufferManager buffer, int rootBlockNum) {
+		
+		MaxIndex=(int)Math.floor(((double)Buffer.Maxbyte - 1/*叶子标记为是leaf还是internal node*/-4/*有多少个索引键*/-PointerLength/*父亲块号*/-PointerLength/*兄弟块的块号*/)/(8+index.Size));
+		MinIndex=(int)Math.ceil(1.0 * MaxIndex/ 2);
+		Max = MaxIndex - 1; //一个block能放下多少index根据设定B+树的序数。
+		Min = (int)Math.ceil(1.0 * MaxIndex/ 2) - 1;
+		this.index = index;
+		filename = index.IndexName + ".index";
+		System.out.println("MaxIndex = "+MaxIndex+" MinIndex = "+ MinIndex +" Max = "+ Max +" Min = "+ Min+" rootblocknum = " + rootBlockNum);
+		
+		new LeafNode(Root=BufferManager.getblock(rootBlockNum),true);
+	}
 	public void insert(byte[] key, address a){
+		//System.out.println("in tree insert");
 		TreeNode rootnode;
-		if (Root.block[0] == 1) {
+		if (Root.block[0] == '0') {			
 			rootnode = new InnerNode(Root,true);
 		}
 		else {
 			rootnode = new LeafNode(Root,true);
 		}
-		
 		byte[] attrkey = new byte[index.Size]; //要把key扩展为跟现在的key一样长
-		
+
+		//System.out.println("Size = "+index.Size);
 		for (int i = 0; i < key.length; i++) {
 			attrkey[i] = key[i];
 		}
@@ -44,12 +74,12 @@ public class BplusTree {
 		if(newRoot!=null){ //假如有返回，说明根块被更新了
 			Root=newRoot;
 		}
-		
+		index.RootNum = Root.blockOffset;
 	}
 	
 	public void delete(byte[] key) {
 		TreeNode rootnode;
-		if (Root.block[0] == 1) {
+		if (Root.block[0] == '0') {
 			rootnode = new InnerNode(Root,true);
 		}
 		else {
@@ -68,13 +98,16 @@ public class BplusTree {
 		Buffer newRoot=rootnode.delete(attrkey); //节点的插入操作
 	    
 		if(newRoot!=null){ //假如有返回，说明根块被更新了
+			System.out.println("you fanhui !");
 			Root=newRoot;
 		}
+		index.RootNum = Root.blockOffset;
+		//System.out.println(index.RootNum);
 	}
 	
 	public address search(byte[] key) {
 		TreeNode rootnode;
-		if (Root.block[0] == 1) {
+		if (Root.block[0] == '0') {
 			rootnode = new InnerNode(Root, true);
 		}
 		else {
@@ -124,7 +157,8 @@ public class BplusTree {
 		@Override
 		Buffer insert(byte[] key, address a) {
 			// TODO Auto-generated method stub
-			
+			System.out.println("in inner insert");
+
 			int keynum = nodeblock.getInt(1);
 			int i = 0;
 			for (i = 0; i < keynum; i++) {
@@ -133,10 +167,12 @@ public class BplusTree {
 					break;
 				}
 			}
-			
+			System.out.println("i = "+ i);
+			System.out.println("parentblocknum = " + nodeblock.blockOffset);
 			int childBlockNum = nodeblock.getInt(9 + i * (index.Size + PointerLength));//读进指针指向的子节点
-			Buffer childblock = BufferManager.readBlock(filename, childBlockNum); //将这个子块读进来
-			
+			System.out.println("childblocknum = "+childBlockNum);
+			Buffer childblock = BufferManager.getblock(childBlockNum); //将这个子块读进来
+			System.out.println("childdblock = " + Arrays.toString(childblock.block));
 			TreeNode child;
 			if(childblock.block[0] == '0') 
 				child = new InnerNode(childblock,true); //如果是内部节点 
@@ -158,7 +194,7 @@ public class BplusTree {
 			}
 			
 			int childBlockNum = nodeblock.getInt(9 + i * (index.Size + PointerLength));//读进指针指向的子节点
-			Buffer childblock = BufferManager.readBlock(filename, childBlockNum); //将这个子块读进来
+			Buffer childblock = BufferManager.getblock(childBlockNum); //将这个子块读进来
 			
 			TreeNode child;
 			if(childblock.block[0] == '0') 
@@ -181,7 +217,7 @@ public class BplusTree {
 			}
 			
 			int childBlockNum = nodeblock.getInt(9 + i * (index.Size + PointerLength));//读进指针指向的子节点
-			Buffer childblock = BufferManager.readBlock(filename, childBlockNum); //将这个子块读进来
+			Buffer childblock = BufferManager.getblock(childBlockNum); //将这个子块读进来
 			
 			TreeNode child;
 			if(childblock.block[0] == '0') 
@@ -192,75 +228,109 @@ public class BplusTree {
 		}
 		
 		Buffer split(byte[] key, TreeNode left, TreeNode right) {
-			int keynum = nodeblock.getInt(1);
 			
+			int keynum = nodeblock.getInt(1);
+			System.out.println("keynum = "+ keynum+ " midkey = " + Arrays.toString(key));
 			if (keynum == 0) { //新节点
 				keynum++;
 				nodeblock.setInt(1,keynum);
 				nodeblock.setBytes(9 + PointerLength, key); //第一个值设为自己的key
 				nodeblock.setInt(9, left.nodeblock.blockOffset); //第一个指针指向左儿子
 				nodeblock.setInt(9 + PointerLength + key.length, right.nodeblock.blockOffset); //第二个指针指向右儿子
+				//System.out.println(Arrays.toString(nodeblock.block));
 				return this.nodeblock; //新的根
 			}
 			
 			if (++keynum <= Max) { // 内部节点没有满
+				System.out.println("father key = " + keynum);
 				int i;
 				for (i = 0; i < keynum - 1; i++) {
 					int start = 9 + PointerLength + i * (index.Size + PointerLength);
 					if (compare(key,nodeblock.getBytes(start, index.Size)) < 0) { //遇见了第一个比插入的值大的key，在他前面插入
 						//把要插入的位置留出来
 						System.arraycopy(nodeblock.block, 9 + PointerLength + i * (index.Size + PointerLength), nodeblock.block, 9 + PointerLength + (i+1) * (index.Size + PointerLength), PointerLength + (keynum - 1 - i)*(index.Size + PointerLength));
-						nodeblock.insertkey(9 + i * (index.Size + PointerLength), key, right.nodeblock.blockOffset);
+						nodeblock.insertkey(9 + i * (index.Size + PointerLength), key, left.nodeblock.blockOffset, right.nodeblock.blockOffset);
 						nodeblock.setInt(1, keynum); //更新键的数目
 						return null;
 					}
 				}
 				if (i == keynum - 1) {
-					nodeblock.insertkey(9 + i *(index.Size + PointerLength), key, right.nodeblock.blockOffset);
+					//System.out.println("yes key > nodeblock!");
+					nodeblock.insertkey(9 + i *(index.Size + PointerLength), key, left.nodeblock.blockOffset, right.nodeblock.blockOffset);
 					nodeblock.setInt(1, keynum);
 					return null;
 				}
 			} 
 			else {//内部节点满了
+				System.out.println("inner---else");
+				int i;
+				for (i = 0; i < keynum - 1; i++) {
+					int start = 9 + PointerLength + i * (index.Size + PointerLength);
+					if (compare(key,nodeblock.getBytes(start, index.Size)) < 0) { //遇见了第一个比插入的值大的key，在他前面插入
+						//把要插入的位置留出来
+						System.arraycopy(nodeblock.block, 9 + PointerLength + i * (index.Size + PointerLength), nodeblock.block, 9 + PointerLength + (i+1) * (index.Size + PointerLength), PointerLength + (keynum - 1 - i)*(index.Size + PointerLength));
+						nodeblock.insertkey(9 + i * (index.Size + PointerLength), key, left.nodeblock.blockOffset, right.nodeblock.blockOffset);
+						nodeblock.setInt(1, keynum); //更新键的数目
+						//return null;
+					}
+				}
+				if (i == keynum - 1) {
+					//System.out.println("yes key > nodeblock!");
+					nodeblock.insertkey(9 + i *(index.Size + PointerLength), key, left.nodeblock.blockOffset, right.nodeblock.blockOffset);
+					nodeblock.setInt(1, keynum);
+					//return null;
+				}
+				System.out.println("node = " + Arrays.toString(nodeblock.block));
+				//先正常的插入，再取前Min个key，和后Max-Min个key。
 				Buffer slibingblock = BufferManager.create(filename, index.BlockNum);//建立一块新的buffer
+				//System.out.println("slibingblock = " + Arrays.toString(slibingblock.block));
 				index.BlockNum ++;
 				InnerNode slibing = new InnerNode(slibingblock,false); //分裂节点，为兄弟
-				boolean Infirst = false; //要插入的键值是否处于前一半	
-				nodeblock.setInt(1, Min);
-				slibingblock.setInt(1, Max - Min + 1);
+				nodeblock.setInt(1, Min); // 原节点留下一个
+				slibingblock.setInt(1, Max - Min); //兄弟节点留下2个
+				System.arraycopy(nodeblock.block, 9 + (Min+1)*(index.Size + PointerLength), slibingblock.block, 9, (Max - Min)*(index.Size + PointerLength) + PointerLength);
+				
+				System.out.println("nodeblock = " + Arrays.toString(nodeblock.block));
+				System.out.println("slibingblock = " + Arrays.toString(slibingblock.block));
+				/*boolean Infirst = false; //要插入的键值是否处于前一半	
+				nodeblock.setInt(1, Min); // 原节点留下一个
+				slibingblock.setInt(1, Max - Min + 1); //兄弟节点留下2个
 				
 				for (int i = 0; i < Min; i++){//要插入的键值会处于前一半
 					int start = 13 + i * (index.Size + PointerLength); // i号键的地址
 					if (compare(key, nodeblock.getBytes(start, index.Size)) < 0) {
 						//要先把后半部分的东西移到下一个block，然后再把这个block内的空位移出来
-						System.arraycopy(nodeblock.block, 9 + Min*(index.Size + PointerLength), slibingblock.block,9, PointerLength + (Max - Min)*(index.Size + PointerLength));
+						System.arraycopy(nodeblock.block, 9 + PointerLength + Min*(index.Size + PointerLength), slibingblock.block,9, (Max - Min)*(index.Size + PointerLength));
 						System.arraycopy(nodeblock.block, 9 + i*(index.Size + PointerLength), nodeblock.block, 9 + (i + 1)*(index.Size + PointerLength), PointerLength + (MinIndex - 1 - i)*(index.Size + PointerLength));
-						nodeblock.insertkey(9 + PointerLength + i*(index.Size + 8) ,key, right.nodeblock.blockOffset);
+						nodeblock.insertkey(9  + i*(index.Size + 8) ,key, left.nodeblock.blockOffset, right.nodeblock.blockOffset);
 						Infirst = true;
 						break;
 					}
 				}
 				
 				if (!Infirst) {//要插入的键值会属于后一半
+					System.out.print("yes, in the after half!");
 					System.arraycopy(nodeblock.block, 9 + (Min+1)*(index.Size + PointerLength), slibingblock, 9, PointerLength + (Max - Min - 1)*(index.Size + PointerLength));
 					int i = 0;
 					for (i = 0; i < Max - Min - 1; i++){
 						int start = 9 + PointerLength + i * (index.Size + PointerLength);
 						if (compare(key,slibingblock.getBytes(start, index.Size)) < 0) {
 							System.arraycopy(slibingblock.block, 9 + i*(index.Size + PointerLength), slibingblock.block, 9 + (i + 1)*(index.Size + PointerLength), PointerLength+(MaxIndex-MinIndex-i)*(index.Size + PointerLength));
-							slibingblock.insertkey(9 + i *(index.Size + PointerLength), key, right.nodeblock.blockOffset);
+							slibingblock.insertkey(9 + i *(index.Size + PointerLength), key,  left.nodeblock.blockOffset, right.nodeblock.blockOffset);
 							break;
 						}
 					}
 				}
 				
+				System.arraycopy(slibingblock, 9 + index.Size + PointerLength, slibingblock, 9, (Max - Min) * (index.Size + PointerLength));
+				*/
 				//get 正中间的key，将上传给父亲节点
 				byte[] midkey = nodeblock.getBytes(9 + PointerLength + (Min)*(index.Size+PointerLength), index.Size);
 				
 				//更新新建的子块的父亲
 				for (int j = 0; j <= slibingblock.getInt(1); j++){//遍历新的节点的所有的子key节点
 					int childBlockNum=slibingblock.getInt(9 + j*(index.Size + PointerLength));
-					BufferManager.readBlock(filename, childBlockNum).setInt(5, index.BlockNum - 1);//把它们的父节点设为新建的这个节点。					
+					BufferManager.getblock(childBlockNum).setInt(5, slibingblock.blockOffset);//把它们的父节点设为新建的这个节点。					
 				}	
 	
 				int parentBlockNum;
@@ -277,7 +347,7 @@ public class BplusTree {
 				else{
 					parentBlockNum = nodeblock.getInt(5);				
 					slibingblock.setInt(5, parentBlockNum); //新节点的父亲也就是旧节点的父亲
-					parentblock = BufferManager.readBlock(filename, parentBlockNum);
+					parentblock = BufferManager.getblock(parentBlockNum);
 					parent = new InnerNode(parentblock,true);
 				}
 				
@@ -290,30 +360,43 @@ public class BplusTree {
 		Buffer combine(byte[] midkey, Buffer nextblock) {
 			int keynum = nodeblock.getInt(1);
 			int nextkeynum = nextblock.getInt(1);
-			System.arraycopy(nextblock.block, 9, nodeblock, 9+(keynum+1)*(index.Size+PointerLength), PointerLength + nextkeynum*(index.Size + PointerLength));
+			System.out.println("keynum = "+keynum + " nextkeynum = " + nextkeynum);
+			//System.out.println(9+ (keynum+1)*(index.Size+PointerLength)+PointerLength + nextkeynum*(index.Size + PointerLength));
+			System.arraycopy(nextblock.block, 9, nodeblock.block, 9+ (keynum+1)*(index.Size+PointerLength), PointerLength + nextkeynum*(index.Size + PointerLength));
 			nodeblock.setBytes(9 + keynum*(index.Size+PointerLength) + PointerLength, midkey);
 			keynum = keynum + nextkeynum + 1;
 			nodeblock.setInt(1,keynum);
 			int parentBlockNum = nodeblock.getInt(5);
-			Buffer parentblock = BufferManager.readBlock(filename, parentBlockNum);
+			Buffer parentblock = BufferManager.getblock(parentBlockNum);
 			index.BlockNum--;
 			return (new InnerNode(parentblock,true).delete(nextblock));
 		}
 
 		public void exchange(byte[] key, int keyBlockNum) {
+			System.out.println("pppppp");
+			System.out.println("node = "+nodeblock.blockOffset);
 			int keynum = nodeblock.getInt(1);
 			int i = 0;
 			int childBlockNum;
-			for(i= 0; i < keynum; i++) {
-				int start = 9+ i*(index.Size+ PointerLength);
+			for(i= 0; i <= keynum; i++) { 
+				//System.out.println("");
+				int start = 9 + i*(index.Size + PointerLength);
 				childBlockNum = nodeblock.getInt(start);
 				if (childBlockNum == keyBlockNum) { //找到了一个儿子跟要求修改的块号一样
 					break;
 				}
 			}
-			if (i < keynum) { //有需要修改的儿子块号
-				nodeblock.setBytes(9 + i * (index.Size + PointerLength) + PointerLength, key);//把这个块号的值变为key
+			System.out.println("i = "+i);
+			if (i <= keynum && i > 0) { //有需要修改的儿子块号,注意其实需要修改的永远不会是0
+				System.out.println("key = "+Arrays.toString(key));
+				nodeblock.setBytes(9 + (i - 1) * (index.Size + PointerLength) + PointerLength, key);//把这个块号的值变为key
 			}
+			else if (i == 0 ){ //没有需要修改的儿子块号，说明其实这个路标在他的祖先节点
+				int parentBlockNum = nodeblock.getInt(5);
+				Buffer parentblock = BufferManager.getblock(parentBlockNum);
+				(new InnerNode(parentblock, true)).exchange(key, nodeblock.blockOffset);
+			}
+			
 		}
 		
 		byte[] allocate(Buffer siblingblock, byte[] key, String relation) {
@@ -323,7 +406,8 @@ public class BplusTree {
 			if (relation.equals("After")) {
 				int siblingBlockNum = siblingblock.getInt(9);
 				//兄弟的第一个儿子的块号
-				nodeblock.insertkey(9 + PointerLength + keynum *(index.Size + PointerLength), key, siblingBlockNum);
+				nodeblock.setBytes(9 + keynum *(index.Size + PointerLength), key);
+				nodeblock.setInt(9 + keynum *(index.Size + PointerLength) + key.length, siblingBlockNum);
 				//把兄弟的第一个儿子插入自己的尾部。
 				siblingkeynum--;
 				siblingblock.setInt(1,siblingkeynum);
@@ -347,14 +431,22 @@ public class BplusTree {
 			
 		}
 		Buffer delete(Buffer deleteblock){
+			System.out.println("inner delete");
 			int keynum = nodeblock.getInt(1);
+			System.out.println("keynum = " + keynum);
+			System.out.println("block No" + nodeblock.blockOffset);
 			for (int i = 0; i <= keynum; i++) {
 				int start = 9 + i*(index.Size + PointerLength);
 				int pointer = nodeblock.getInt(start);
 				if (pointer == deleteblock.blockOffset) { //找到了要删除的块号
-					System.arraycopy(nodeblock.block, 9 + PointerLength + (i-1)*(index.Size + PointerLength), nodeblock.block, 9 + PointerLength + i*(index.Size + PointerLength), (keynum-i)*(index.Size + PointerLength));
+					System.out.println("i = " + i); //实际上，由于永远是用前面的block合并后面的block，不会出现i=0的情况，即不会删除第一个节点。
+					System.arraycopy(nodeblock.block, 9 + PointerLength + i*(index.Size + PointerLength), nodeblock.block, 9 + PointerLength + (i-1)*(index.Size + PointerLength), (keynum-i)*(index.Size + PointerLength));
+					
 					keynum--;
 					nodeblock.setInt(1,keynum);
+					
+					BufferManager.remove(deleteblock);
+					//System.out.println("No " + nodeblock.blockOffset + Arrays.toString(nodeblock.block));
 					if (keynum >= Min) { //如果删除不会造成任何影响，则删除后直接结束
 						return null;
 					}
@@ -362,13 +454,18 @@ public class BplusTree {
 					if (nodeblock.block[5] == '*') {//删除后，节点小于最小值，且没有父亲
 						if (keynum == 0) {//只有一个子块，没有key作为分界值
 							index.BlockNum--;
-							return BufferManager.readBlock(filename, nodeblock.getInt(9));//子块作为根
+							BufferManager.remove(nodeblock);
+							Buffer newroot = BufferManager.getblock(nodeblock.getInt(9));
+							newroot.clear(5,4);
+							//System.out.println(Arrays.toString(newroot.block));
+							
+							return newroot;//子块作为根
 						}
 						return null;
 					}
 					
 					int parentBlockNum = nodeblock.getInt(5); //找到父亲节点
-					Buffer parentblock = BufferManager.readBlock(filename, parentBlockNum);
+					Buffer parentblock = BufferManager.getblock(parentBlockNum);
 					int parentkeynum = parentblock.getInt(1);
 					int siblingBlockNum;
 					Buffer siblingblock;
@@ -378,10 +475,12 @@ public class BplusTree {
 						int sstart = 9 + j*(index.Size+PointerLength);
 						if (nodeblock.blockOffset == parentblock.getInt(sstart)) {
 							siblingBlockNum = parentblock.getInt(sstart + PointerLength + index.Size);
-							siblingblock = BufferManager.readBlock(filename, siblingBlockNum);
+							siblingblock = BufferManager.getblock(siblingBlockNum);
 							//找到后面的兄弟块
 							byte[] midkey = parentblock.getBytes(sstart + PointerLength, index.Size);
-							if ((siblingblock.getInt(1) + keynum) <= Max) {
+							System.out.println("midekey = " + Arrays.toString(midkey));
+							System.out.println("block = " + siblingblock.blockOffset + Arrays.toString(siblingblock.block));
+							if ((siblingblock.getInt(1) + keynum) < Max) {
 								return this.combine(midkey,siblingblock);
 							}
 							(new InnerNode(parentblock,true)).exchange(allocate(siblingblock,midkey,"After"),nodeblock.blockOffset);
@@ -391,7 +490,7 @@ public class BplusTree {
 					}
 					//已经是最后一个节点，只能找有没有前面的兄弟节点
 					siblingBlockNum = parentblock.getInt(9+(parentkeynum-1)*(index.Size + PointerLength));
-					siblingblock = BufferManager.readBlock(filename, siblingBlockNum);
+					siblingblock = BufferManager.getblock(siblingBlockNum);
 					//找到前面的兄弟节点
 					byte[] midkey = parentblock.getBytes(9 + (parentkeynum-1)*(index.Size + PointerLength)+PointerLength,index.Size);
 					
@@ -411,7 +510,7 @@ public class BplusTree {
 		public LeafNode(Buffer creatblock, boolean isexistnode){
 			nodeblock = creatblock;
 			if (!isexistnode) {   //不是已经存在的节点，那么是新建的，要把头文件信息初始化。
-				nodeblock.block[0] = 1; //是叶子节点
+				nodeblock.block[0] = '1'; //是叶子节点
 				nodeblock.setInt(1,0); //总共的键值数为0
 				nodeblock.clear(5,8); 
 			}
@@ -419,17 +518,20 @@ public class BplusTree {
 		
 		@Override
 		Buffer insert(byte[] key, address a) {
+			System.out.println("in leaf insert");
 			// TODO Auto-generated method stub
 			int keynum = nodeblock.getInt(1);
 			if (++keynum <= MaxIndex) { // 叶子节点没有满
-				if (keynum - 1 == 0) {//这是一个新的叶子节点，那么要把指向自己父亲的pointer移到后面去，给自己腾出位置。
+				//System.out.println("Leaf --- if");
+				if (keynum - 1 == 0) {//请注意之前已经keynum++过了，这是一个新的叶子节点，那么要把指向自己父亲的pointer移到后面去，给自己腾出位置。
 					System.arraycopy(nodeblock.block, 9, nodeblock.block, 9 + (index.Size + 8), PointerLength);
 					nodeblock.insertkey(9,key,a);
 					nodeblock.setInt(1, keynum);
 					return null; //
 				}
 				int i;
-				for (i = 0; i < keynum; i++) {
+				System.out.println("nodeblockNum = "+ nodeblock.blockOffset + " keynum = " + keynum);
+				for (i = 0; i < keynum - 1; i++) {
 					int start = 17 + i * (index.Size + 8);
 					
 					if (compare(key,nodeblock.getBytes(start, index.Size)) == 0) { //匹配到已经存在的key，说明是更新value
@@ -439,26 +541,36 @@ public class BplusTree {
 					
 					if (compare(key,nodeblock.getBytes(start, index.Size)) < 0) { //遇见了第一个比插入的值大的key，在他前面插入
 						//把要插入的位置留出来
-						System.arraycopy(nodeblock.block, 9 + i * (index.Size + 8), nodeblock.block, 9 + (i+1) * (index.Size + 8), PointerLength + (keynum - 1 - i)*(index.Size + 8));
+						System.out.println("Yes key < nodeblock");
+						System.arraycopy(nodeblock.block, 9 + i * (index.Size + 8), nodeblock.block, 9 + (i+1) * (index.Size + 8), PointerLength + (keynum -1 - i)*(index.Size + 8));
 						nodeblock.insertkey(9 + i * (index.Size + 8), key, a);
 						nodeblock.setInt(1, keynum); //更新键的数目
 						return null;
 					}
 				}
-				if (i == keynum) {
-					System.arraycopy(nodeblock.block, 9 + (i - 1)*(index.Size + 8), nodeblock.block, 9 + i * (index.Size + 8), PointerLength);
-					nodeblock.insertkey(9 + (i - 1)*(index.Size + 8), key, a);
+				if (i == keynum - 1) {
+					System.out.println("i = "+ i);
+					//System.out.println("Before = " + Arrays.toString(nodeblock.block));
+					System.arraycopy(nodeblock.block, 9 + i*(index.Size + 8), nodeblock.block, 9 + (i+1) * (index.Size + 8), PointerLength);
+					//System.out.println(Arrays.toString(key));
+					nodeblock.insertkey(9 + i *(index.Size + 8), key, a);
 					nodeblock.setInt(1, keynum);
+					
+					
+					//System.out.println("nodeblock.blockOffset = " + nodeblock.blockOffset);
+					
 					return null;
 				}
 			} 
 			else {//叶子节点满了
 				Buffer slibingblock = BufferManager.create(filename, index.BlockNum);//建立一块新的buffer
+				//System.out.println(index.BlockNum);
 				index.BlockNum ++;
-				LeafNode slibing = new LeafNode(slibingblock,false);
+				LeafNode slibing = new LeafNode(slibingblock, false);
 				boolean Infirst = false;
 				for (int i = 0; i < MinIndex - 1; i++){//要插入的键值会处于前一半
 					int start = 17 + i * (index.Size + 8); // i号键的地址
+					//System.out.println(Arrays.toString(nodeblock.block));
 					if (compare(key, nodeblock.getBytes(start, index.Size)) < 0) {
 						//要先把后半部分的东西移到下一个block，然后再把这个block内的空位移出来
 						System.arraycopy(nodeblock.block, 9 + (MinIndex - 1)*(index.Size + 8), slibingblock.block,9, PointerLength + (MaxIndex - MinIndex + 1)*(index.Size + 8));
@@ -468,9 +580,8 @@ public class BplusTree {
 						break;
 					}
 				}
-				
 				if (!Infirst) {//要插入的键值会属于后一半
-					System.arraycopy(nodeblock.block, 9 + MinIndex*(index.Size + 8), slibingblock, 9, PointerLength + (MaxIndex - MinIndex)*(index.Size + 8));
+					System.arraycopy(nodeblock.block, 9 + MinIndex*(index.Size + 8) , slibingblock.block, 9, PointerLength + (MaxIndex - MinIndex)*(index.Size + 8));
 					int i = 0;
 					for (i = 0; i < MaxIndex - MinIndex; i++){
 						int start = 17 + i * (index.Size + 8);
@@ -482,13 +593,13 @@ public class BplusTree {
 					}
 					
 					if (i == MaxIndex - MinIndex) {
-						System.arraycopy(slibingblock.block, 9 + i*(index.Size + 8), slibingblock.block, 9 + (i + 1)*(index.Size + 8), PointerLength+(MaxIndex-MinIndex-i)*(index.Size + 8));
+						//System.arraycopy(slibingblock.block, 9 + i*(index.Size + 8), slibingblock.block, 9 + (i + 1)*(index.Size + 8), PointerLength+(MaxIndex-MinIndex-i)*(index.Size + 8));
 						slibingblock.insertkey(9 + i *(index.Size + 8), key, a);
 					}
 				}
 				
 				nodeblock.setInt(1,MinIndex);
-				slibingblock.setInt(1,MaxIndex-MinIndex);
+				slibingblock.setInt(1,MaxIndex-MinIndex+1);
 				
 				nodeblock.setInt(9 + MinIndex * (index.Size + 8), slibingblock.blockOffset);
 				
@@ -501,17 +612,19 @@ public class BplusTree {
 					index.BlockNum++;		
 					nodeblock.setInt(5, parentBlockNum);
 					slibingblock.setInt(5, parentBlockNum);
+					
 					parent=new InnerNode(parentblock,false);
 				}
 				else{
 					parentBlockNum=nodeblock.getInt(5);				
 					slibingblock.setInt(5, parentBlockNum); //新节点的父亲也就是旧节点的父亲
-					parentblock=BufferManager.readBlock(filename, parentBlockNum);
+					parentblock=BufferManager.getblock(parentBlockNum);
 					parent=new InnerNode(parentblock,true);
 				}
 			
 				//让父块分裂出它们两个块
-				byte[] midkey = slibingblock.getBytes(17, index.Size);				
+				byte[] midkey = slibingblock.getBytes(17, index.Size);
+				//System.out.println("midkey = " + Arrays.toString(midkey));
 				return  parent.split(midkey, this, slibing); //把自己，兄弟和分离的键提交给父亲
 			}
 			return null;
@@ -520,7 +633,9 @@ public class BplusTree {
 		@Override
 		Buffer delete(byte[] key) {
 			// TODO Auto-generated method stub
+			System.out.println("leaf delete");
 			int keynum = nodeblock.getInt(1);
+			
 			for (int i = 0; i < keynum; i++) {
 				int start = 17 + i * (index.Size + 8); // 一个叶子block的排列是先标识符，再4位表示keynum，再4位表示父亲节点的块号，再开始 address | key值，这样排列，最后是4位的兄弟块号
 				
@@ -530,13 +645,35 @@ public class BplusTree {
 				}
 				
 				if (compare(key,nodeblock.getBytes(start, index.Size)) == 0) {//找到要删除的键
+					
+					System.out.println("the deletekey is blocknum = "+nodeblock.blockOffset + " i = "+i+Arrays.toString(nodeblock.block));
 					System.arraycopy(nodeblock.block, 9 + (i+1) * (index.Size + 8), nodeblock.block, 9 + i * (index.Size + 8), PointerLength+(keynum-1-i)*(index.Size+8));
 					keynum--;
 					nodeblock.setInt(1,keynum);
-					if (keynum >= Min) {
+					
+					if (nodeblock.block[5] == '*') { //是根
 						return null;
 					}
-					if (nodeblock.block[5] == '*') { //是根
+					
+					if (i == 0) {//删掉了叶子头
+						System.out.println("exchange!");
+						int parentBlockNum = nodeblock.getInt(5);
+						Buffer parentblock=BufferManager.getblock(parentBlockNum);
+						//int parentkeynum=parentblock.getInt(1);
+						//System.out.println("parentkeynum = " + parentkeynum);
+					//	if (parentblock.getInt(9) != nodeblock.blockOffset) {//自己是父亲的第一个儿子
+					/*		int j = 0;
+							for (j = 0; j<= parentkeynum; j++) {
+								int sstart = 9 + j*(index.Size + PointerLength);
+								if (parentblock.getInt(sstart) == nodeblock.blockOffset){
+									break;
+								}  //找到了自己在父亲节点中的位置
+							}*/
+						(new InnerNode(parentblock,true)).exchange(nodeblock.getBytes(start + index.Size + 8, index.Size), nodeblock.blockOffset);
+							//要把自己的下一个节点送给parent更新parent的第j个路标。
+					}
+					
+					if (keynum >= MinIndex) {
 						return null;
 					}
 					
@@ -545,39 +682,54 @@ public class BplusTree {
 						last = true; //没有下一块，是叶子节点最后一块
 					}
 					
+					System.out.println("Last = "+last);
+					//System.out.println("the deletekey is blocknum = "+nodeblock.blockOffset + " i = "+i+Arrays.toString(nodeblock.block));
+
 					int siblingBlockNum = nodeblock.getInt(9 + keynum *(index.Size + 8));
-					Buffer siblingblock = BufferManager.readBlock(filename, siblingBlockNum);
+					Buffer siblingblock = BufferManager.getblock(siblingBlockNum);
 					int parentBlockNum = nodeblock.getInt(5);
 					
+					if (siblingblock == null) {
+						System.out.println("No sibling!");
+					}
+					else {
+						System.out.println("sibling blocknum = "+ siblingblock.blockOffset);
+						System.out.println("sibling father = "+siblingblock.getInt(5));
+					}
 					if (last || siblingblock == null || siblingblock.getInt(5) != parentBlockNum) { //是最后一块，或者没有兄弟，或者下一块不是自己的亲兄弟
-						Buffer parentblock=BufferManager.readBlock(filename, parentBlockNum);
-						int j=0;
+						System.out.println("Leaf Node - if");
+						Buffer parentblock=BufferManager.getblock(parentBlockNum);
+						int j = 0;
 						int parentkeynum=parentblock.getInt(1);
-						for(j = 0; j < parentkeynum; j++){
-							int sstart = 9 + PointerLength + j*(index.Size+PointerLength);
-							if(compare(key,parentblock.getBytes(sstart, index.Size)) < 0){ //找到自己的兄弟节点
-								siblingBlockNum=parentblock.getInt(sstart - 2 * PointerLength - index.Size);
-								siblingblock=BufferManager.readBlock(filename, siblingBlockNum);
+						System.out.println("parentkeynum = "+parentkeynum);
+						for(j = 0; j <= parentkeynum; j++){
+							int sstart = 9 + j*(index.Size+PointerLength);
+							if(nodeblock.blockOffset == parentblock.getInt(sstart)){ //找到自己的兄弟节点,肯定有兄弟，不然不是B+树的结构
+								siblingBlockNum=parentblock.getInt(sstart - PointerLength - index.Size);
+								siblingblock=BufferManager.getblock(siblingBlockNum);
 								break;
 							}
 						}
 						
+						System.out.println("siblingblock"+siblingblock.blockOffset);
 						if ((siblingblock.getInt(1) + keynum) <= MaxIndex) { //合并两个节点
+							System.out.println("Leaf Node - if if");
 							return (new LeafNode(siblingblock,true).combine(nodeblock));
 						}
 						else { //重新分配兄弟节点和它的子节点个数
+							System.out.println("Leaf Node - if else");
 							(new InnerNode(parentblock,true)).exchange(allocate(siblingblock,"Before"),siblingBlockNum);
 							return null; 
-						}
-						
-						
+						}			
 					}
 					else { //有在他后面的兄弟节点
 						if ((siblingblock.getInt(1) + keynum) <= MaxIndex) { //合并两个节点
-							return this.combine(nodeblock);
+							System.out.println("Leaf Node - else if");
+							return this.combine(siblingblock);
 						}
 						else { //重新分配兄弟节点和它的子节点个数
-							Buffer parentblock = BufferManager.readBlock(filename, parentBlockNum);
+							System.out.println("Leaf Node - else else");
+							Buffer parentblock = BufferManager.getblock(parentBlockNum);
 							(new InnerNode(parentblock,true)).exchange(allocate(siblingblock,"After"),siblingBlockNum);
 							return null; 
 						}
@@ -625,12 +777,15 @@ public class BplusTree {
 		Buffer combine(Buffer nextblock) {
 			int keynum = nodeblock.getInt(1);
 			int nextkeynum = nextblock.getInt(1);
+			System.out.println("keynum = "+keynum + " nextkeynum = "+nextkeynum);
+			System.out.println(nextblock.blockOffset);
 			System.arraycopy(nextblock.block, 9, nodeblock.block, 9 + keynum*(index.Size + 8), PointerLength+nextkeynum*(index.Size + 8));
 			keynum += nextkeynum;
 			nodeblock.setInt(1,keynum);
+			System.out.println(Arrays.toString(nodeblock.block));
 			index.BlockNum--;
 			int parentBlockNum = nodeblock.getInt(5);
-			Buffer parentblock = BufferManager.readBlock(filename, parentBlockNum);
+			Buffer parentblock = BufferManager.getblock(parentBlockNum);
 			return (new InnerNode(parentblock,true)).delete(nextblock);
 		}
 		
@@ -648,6 +803,7 @@ public class BplusTree {
 				siblingblock.setInt(1,siblingkeynum);
 				System.arraycopy(siblingblock.block, 9+8+index.Size, siblingblock.block, 9, PointerLength+siblingkeynum*(8+index.Size));
 				byte[] midkey = siblingblock.getBytes(17,index.Size);
+				System.out.println("midkey = " + Arrays.toString(midkey));
 				nodeblock.insertkey(9+keynum*(index.Size + 8), key, a); //把兄弟节点的键值插入自己尾部。
 				keynum++;
 				nodeblock.setInt(1,keynum);
@@ -672,5 +828,5 @@ public class BplusTree {
 			}
 		}
 	}
-	
+
 }

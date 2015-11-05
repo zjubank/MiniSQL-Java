@@ -74,10 +74,34 @@ public class API {
 	public static boolean CreateIndex( String IndexName, String TableName, String AttributeName )
 	{
 //		System.out.println("|**** Create Index ****|");
-//		
-		Index index = new Index( IndexName, TableName, AttributeName );
-		//Then store 'Index index' somewhere
-		//Use IndexManager
+		int Index_Table = -1;
+		for( int i = 0; i < database.Tables.size(); i++)
+		{
+			if( database.Tables.get(i).TableName.equals(TableName) )
+			{
+				Index_Table = i;
+			}
+		}
+		if( Index_Table == -1 )
+		{
+			return false;
+		}
+		
+		int Attribute = -1;
+		for( int i = 0; i < database.Tables.get(Index_Table).AttriNum; i++ )
+		{
+			if( database.Tables.get(Index_Table).Attributes.get(i).AttributeName.equals(AttributeName))
+			{
+				Attribute = i;
+			}
+		}
+		if( Attribute == -1 )
+		{
+			return false;
+		}
+		
+		Index index = new Index( IndexName, TableName, Attribute );
+		System.out.println("Index Created!");
 		return true;
 	}
 	

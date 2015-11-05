@@ -1,22 +1,37 @@
 package miniSQL;
 
+import java.util.Arrays;
+
 public class Buffer {
 	public String fileName;
 	public byte[] block;
-	
+	public static final int Maxbyte = 64;
 	//public int recordNum;
 	public int blockOffset;
 	public int RecordNum;
 	public boolean dirtyBit;//是否被写过 
 	public boolean lock;// 保护数据不被替换出去
-			
+	public Buffer previous;	
+	public Buffer next;
+	
 	public  Buffer(String FileName,int Offset){
 		fileName = FileName;
 		this.blockOffset = Offset;
 		dirtyBit = true;
 		lock = false;
-		block = new byte[4096];
-		RecordNum=0;		
+		block = new byte[Maxbyte];
+		RecordNum=0;	
+		this.clear(0, Maxbyte);
+	}
+	
+	public  Buffer(){
+		fileName = null;
+		previous = null;
+		next = null;
+		dirtyBit = false;
+		lock = false;
+		block = new byte[Maxbyte];
+		this.clear(0, Maxbyte);
 	}
 	
 	public void clear(int start, int length) {
@@ -60,12 +75,15 @@ public class Buffer {
 		setInt(start, a.blockOffset);
 		setInt(start + 4, a.offset);	
 		setBytes(start + 8, key);
+		System.out.println("leaf : blockOffset = "+a.blockOffset+" offset = "+a.offset+" key = "+Arrays.toString(key));
 		dirtyBit = true;
 	} 
 	
-	public void insertkey(int start, byte[] key, int offset) {
-		setInt(start, offset);
+	public void insertkey(int start, byte[] key, int leftoffset,  int rightoffset) {
+		setInt(start, leftoffset);
 		setBytes(start + 4, key);
+		setInt(start + 4 + key.length, rightoffset);
+		//System.out.println("inner = "+offset+Arrays.toString(key));
 		dirtyBit = true;
 	}
 	public  void setBytes(int start, byte[] b){
@@ -81,5 +99,9 @@ public class Buffer {
 			b[i] = block[start + i];
 		}
 		return b;
+	}
+	
+	public void print() {
+		System.out.println(Arrays.toString(block));
 	}
 }
