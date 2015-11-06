@@ -129,7 +129,16 @@ public class API {
 		
 		Index indexInfo = new Index( IndexName, TableName, Attribute, database.Tables.get(Index_Table).Attributes.get(Attribute).ScaleByte);
 		IndexManager.createIndex(database.Tables.get(Index_Table),indexInfo);
-		database.Tables.get(Index_Table).AddIndex(indexInfo);
+		
+		Table temp_table = database.Tables.get(Index_Table);
+		temp_table.AddIndex(indexInfo);
+		
+		Attribute temp_attri = temp_table.Attributes.get(Attribute);
+		temp_attri.HasIndex = true;
+		
+		temp_table.Attributes.set(Attribute, temp_attri);
+		database.Tables.set(Index_Table, temp_table);
+		
 		System.out.println("Index Created!");
 		return true;
 	}
