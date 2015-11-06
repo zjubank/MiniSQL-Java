@@ -9,6 +9,7 @@ public class Table {
 	int RowNum			= 0;
 	int BlockNum		= 0;
 	int RecordLength	= 0;//一个table里所有attri的长度
+	int HasIndex		= 0;
 	ArrayList<Attribute>	Attributes	= new ArrayList<Attribute>();
 	ArrayList<Record>		Records		= new ArrayList<Record>();
 	ArrayList<Index>		Indexs		= new ArrayList<Index>();

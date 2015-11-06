@@ -1,6 +1,8 @@
 package miniSQL;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -88,6 +90,8 @@ public class IndexManager {
 		BplusTree thisTree = new BplusTree(indexInfo,buffer,indexInfo.RootNum); //插入树中
 		thisTree.insert(key, a);
 		BufferManager.BufferToFile(indexInfo.IndexName+".index");
+		System.out.println("Blocknum after insert = " + indexInfo.BlockNum);
+		
 	}
 	
  /*	public static address searchrecord(Table tableInfo, Index indexInfo, byte [] Record) {
@@ -97,9 +101,10 @@ public class IndexManager {
 		return a;
 	}*/
 	
-	public static ArrayList<address> searchrecord(Table tableInfo, Index indexInfo, byte [] Record1, byte[] Record2) {
-		byte[] key1 = getIndexAttribute(tableInfo, indexInfo, Record1);
-		byte[] key2 = getIndexAttribute(tableInfo, indexInfo, Record2);
+	public static ArrayList<address> searchrecord(Table tableInfo, Index indexInfo, byte [] key1, byte[] key2) {
+		System.out.println(Arrays.toString(key1));
+		System.out.println(Arrays.toString(key2));
+		
 		BplusTree thisTree = new BplusTree(indexInfo,buffer,indexInfo.RootNum);
 		ArrayList<address> a = thisTree.search(key1, key2);
 		return a;
@@ -110,6 +115,56 @@ public class IndexManager {
 		BplusTree thisTree = new BplusTree(indexInfo,buffer,indexInfo.RootNum); //插入树中
 		thisTree.delete(key);
 		BufferManager.BufferToFile(indexInfo.IndexName+".index");
+	}
+	
+	public static void dropindex(Index indexInfo) {
+		String filename = indexInfo.IndexName;
+		File fs = new File(filename + ".index");
+		fs.delete();
+		fs = new File(filename+".txt");
+		System.out.println("the index has been deleted!");
+	}
+	
+	public static Index rebulidIndex (Table tableInfo,String indexname) {
+		FileInputStream fos;
+		try {
+			fos = new FileInputStream(indexname+".txt");
+			byte[] b = new byte[11];
+			fos.read(b);
+			int attr = Buffer.readInt(b);
+			fos.read(b);
+			int size = Buffer.readInt(b);
+			fos.read(b);
+			int blocknum = Buffer.readInt(b);
+			fos.read(b);
+			int rootnum = Buffer.readInt(b);
+			System.out.println("attr = "+attr + "size = "+size +"blocknum = "+blocknum+"rootnum = "+rootnum);
+
+			Index indexInfo = new Index(indexname, tableInfo.TableName, attr,size,blocknum,rootnum);
+			for (int i = 0; i < indexInfo.BlockNum ; i++) {
+				Buffer thisblock = BufferManager.readBlock(indexInfo.IndexName+".index", i);
+				if(BufferManager.head.next==null){
+					BufferManager.head.next=thisblock;
+					thisblock.previous=BufferManager.head;
+				}
+				else{
+					BufferManager.tail.next=thisblock;
+					thisblock.previous=BufferManager.tail;
+				}
+				BufferManager.tail = thisblock;
+			}
+			return indexInfo;
+		//	BplusTree thisTree = new BplusTree(indexInfo, buffer, indexInfo.RootNum); //插入树中
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+		
+		
 	}
 }
 

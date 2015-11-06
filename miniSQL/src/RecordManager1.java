@@ -222,17 +222,29 @@ public class RecordManager1 {
 			System.out.println("Tablename:"+tablename+", Name:"+AttriName+", Type:"+Type+", Length:"+Length+", Scale:"+Scale+", Addit:"+Addit+", IfUni:"+IfUnique+", IfPri:"+IfPrimer);
 
 			Attribute temp_attri = new Attribute(AttriName, Type, Length, Scale, Addit, IfUnique, IfPrimer);
+			switch(Type)
+			{
+			case 0: case 1: temp_attri.ScaleByte = 11; break;
+			case 2: temp_attri.ScaleByte = Scale; break;
+			default: break;
+			}
 			temp_table.Attributes.add(temp_attri);
 			
 			Counter++;
 		}
 		
 		Counter = 0;
-		while( (str = Rbin.readLine()) != null )
+//		while( (str = Rbin.readLine()) != null )
 		{
+			//现在Rec文件只有一行
+			str = Rbin.readLine();
+			if( str == null )
+			{
+				System.out.println("[Warning] Table '"+tablename+"': Record is Empty!");
+					return false;		
+			}
+
 			int AttriNum = temp_table.AttriNum;
-			
-//			String temp_str = str;
 			for( int i = 0; i < AttriNum; i++ )
 			{
 				switch(temp_table.Attributes.get(i).Type)
@@ -312,6 +324,7 @@ public class RecordManager1 {
 			
 			Counter++;
 		}
+		API.database.Tables.add(temp_table);
 		return true;
 	}
 //

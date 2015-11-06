@@ -184,8 +184,8 @@ public class BplusTree {
 		}
 		
 		int nextBlockNum = searchblock.getInt(9 + keynum * (index.Size + 8));
-		
-		while (nextBlockNum != end) { //没有到end block
+		System.out.println("nextblocknum = " + nextBlockNum);
+		while (nextBlockNum != end && nextBlockNum != 707406378) { //没有到end block
 			searchblock = BufferManager.getblock(nextBlockNum); //更新中间block
 			keynum = searchblock.getInt(1); //更新keynum
 			start = 17; 						
@@ -198,21 +198,22 @@ public class BplusTree {
 			}
 			nextBlockNum = searchblock.getInt(9 + keynum * (index.Size + 8));
 		}
-		
-		searchblock = BufferManager.getblock(nextBlockNum);
-		keynum = searchblock.getInt(1); //更新keynum
-		start = 17; 	
-		for (int i = 0; i < keynum; i++) {
-			start = 17 + i * (index.Size + 8);
-			if (compare(attrkey2,searchblock.getBytes(start, index.Size)) >= 0){  
-				//find = true;
-				//return searchblock.blockOffset;
-                //break;  
-				address b = new address();
-				b.blockOffset = searchblock.getInt(start - 8);
-				b.offset = searchblock.getInt(start - 4);
-				a.add(b);
-            }  
+		if (nextBlockNum != 707406378) {
+			searchblock = BufferManager.getblock(nextBlockNum);
+			keynum = searchblock.getInt(1); //更新keynum
+			start = 17; 	
+			for (int i = 0; i < keynum; i++) {
+				start = 17 + i * (index.Size + 8);
+				if (compare(attrkey2,searchblock.getBytes(start, index.Size)) >= 0){  
+					//find = true;
+					//return searchblock.blockOffset;
+	                //break;  
+					address b = new address();
+					b.blockOffset = searchblock.getInt(start - 8);
+					b.offset = searchblock.getInt(start - 4);
+					a.add(b);
+	            }  
+			}
 		}
 		return a;
 		//return rootnode.search(attrkey1,attrkey2);

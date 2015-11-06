@@ -69,12 +69,19 @@ public class Buffer {
 		return ans;
 	}
 	
-	public static byte[] writeString(String record) {
-		byte[] result = null;
-		for( int i = 1; i < record.length(); i++ )
-		{
-			result[i] = (byte) (record.charAt(i));
+	public static byte[] writeString(String record, int stringlength) {
+		byte[] result = new byte[stringlength];
+		int complement = stringlength - record.length();
+		for (int i = 0; i < complement; i++) {
+			result[i] = 1;
 		}
+		System.out.println("==Record In:"+record);
+		for( int i = complement; i < stringlength; i++)
+		{
+			System.out.println("i"+i+",byte:"+(byte) (record.charAt(i - complement)));
+			result[i] = (byte) (record.charAt(i - complement));
+		}
+		System.out.println("==>Out:"+Arrays.toString(result));
 		return result;
 	}
 	

@@ -78,17 +78,10 @@ public class API {
 			
 			temp_table.Add(tmp_attri);
 			temp_table.Records.add(record);
-			switch(Type)
-			{
-				case 0: case 1: temp_table.RecordLength += 11; break;
-				case 2: temp_table.RecordLength += Scale;
-				default: break;
-			}
 			
 //			System.out.println("===Attri At:"+(temp_table.Attributes.size()-1)+"; Type:"+temp_table.Attributes.get(temp_table.Attributes.size()-1).Type);
 			database.Tables.set(Index_Table, temp_table );
 			database.Tables.get(Index_Table).Print();
-			
 			
 			return true;
 		}
@@ -135,6 +128,7 @@ public class API {
 		
 		Attribute temp_attri = temp_table.Attributes.get(Attribute);
 		temp_attri.HasIndex = true;
+		temp_table.HasIndex++;
 		
 		temp_table.Attributes.set(Attribute, temp_attri);
 		database.Tables.set(Index_Table, temp_table);
@@ -157,6 +151,13 @@ public class API {
 		if( Index_Table > -1 )
 		{
 			Table output_table = database.Tables.get(Index_Table);
+			address output_address = new address();
+			if( output_table.Records.isEmpty() )
+			{
+				System.out.println("==>Empty Table:");
+				OutputTable(output_table);
+				return true;
+			}	
 			
 			if( wherelist == null ){
 //				output_table.Records.clear();
@@ -164,8 +165,8 @@ public class API {
 				return true;
 			}
 			else{
-				//wherelist.lvars.size()次筛选，每次筛选都要遍历所有Attri，以及Attri中的item
-				//一个函数确定是否符合wherelist规定，如果为否直接删除
+				//逐个条件判断
+				//判断完一个条件后将add和output_address取交集
 				for( int Index_Vars = 0; Index_Vars < wherelist.lvars.size(); Index_Vars++ )
 				{
 					String lvar = wherelist.lvars.get(Index_Vars);
@@ -173,261 +174,248 @@ public class API {
 					String sign = wherelist.signs.get(Index_Vars);
 					
 					System.out.println("=>AttriNum:"+output_table.AttriNum);
+					
+					//逐个Attribute判断
+					//如果Attribute的name不匹配lvar，直接检索下一个Attribute
+					//如果匹配了
+						//先看这个Attribute有没有Index，如果有直接调
+						//如果没有Index，再在这个Attribute下查找Record，匹配rvar
 					for( int Index_Attri = 0; Index_Attri < output_table.AttriNum; Index_Attri++ )
 					{
-						Attribute temp_attri = output_table.Attributes.get(Index_Attri);
-						if( output_table.Records.isEmpty() )
+						if( !output_table.Attributes.get(Index_Attri).AttributeName.equals(lvar) )
 						{
-							OutputTable(output_table);
-							return true;
+							continue;
 						}
-						Record temp_record = output_table.Records.get(Index_Attri); 
-						
-						for( int Index_item = 0; Index_item < temp_attri.Length; Index_item++ )
+						else
 						{
+							System.out.println("==lvar at:"+output_table.Attributes.get(Index_Attri).AttributeName);
+						}
+						
+						Attribute temp_attri = output_table.Attributes.get(Index_Attri);
+						Record temp_record = output_table.Records.get(Index_Attri); 
 
-							if( output_table.Attributes.get(Index_Attri).HasIndex == true )
-							//Use Index
+						if( output_table.Attributes.get(Index_Attri).HasIndex == true )
+						{
+							int Index_Index = Index_Attri;//由上面那个if,在这个attri查到有index，那自然编号就一样
+							ArrayList<address> add = new ArrayList<address>();
+							Index temp_index = database.Tables.get(Index_Table).Indexs.get(Index_Index);
+							int Type = database.Tables.get(Index_Table).Attributes.get(Index_Attri).Type;
+							byte[] Record1 = null;
+							byte[] Record2 = null;
+							switch(sign)
 							{
-								System.out.println("Index on this attribute!");
-								Table empty_table = new Table(database.Tables.get(Index_Table).TableName);
-								int Index_Index = -1;
-								for( Index_Index = -1; Index_Index < database.Tables.get(Index_Table).Indexs.size(); Index_Index++ )
+							case "=":
+								if( Type == 0 )
 								{
-									if(database.Tables.get(Index_Table).Indexs.get(Index_Index).IndexName.equals(lvar))
-									{
-										break;
-									}
+									Record1 = Buffer.writeInt(Integer.parseInt(rvar)); //rvar(int) to byte[]
+									Record2 = Buffer.writeInt(Integer.parseInt(rvar));//rvar(int) to byte[]
 								}
-								Index temp_index = database.Tables.get(Index_Table).Indexs.get(Index_Index);
-								
-								int Type = database.Tables.get(Index_Table).Attributes.get(Index_Attri).Type;
-								byte[] Record1 = null;
-								byte[] Record2 = null;
-								switch(sign)
+								else if ( Type == 1 )
 								{
-								case "=":
-									if( Type == 0 )
-									{
-										Record1 = Buffer.writeInt(Integer.parseInt(rvar)); //rvar(int) to byte[]
-										Record2 = Buffer.writeInt(Integer.parseInt(rvar));//rvar(int) to byte[]
-									}
-									else if ( Type == 1 )
-									{
-										Record1 = Buffer.writeFloat( (int)( Double.parseDouble(rvar)*100 ) );//rvar(float) to byte[]
-										Record2 = Buffer.writeFloat( (int)( Double.parseDouble(rvar)*100 ) );//rvar(float) to byte[]
-									}
-									else if ( Type == 2 )
-									{
-										Record1 = Buffer.writeString(rvar);//rvar(string) to byte[]
-										Record2 = Buffer.writeString(rvar);//rvar(string) to byte[]
-									}
-									ArrayList<address> add_0 = IndexManager.searchrecord(output_table, temp_index, Record1, Record2);
-									
-									System.out.println("=:Record1:"+Record1+", Record2"+Record2);
-									for( address ad : add_0 )
-									{
-										System.out.println(ad.blockOffset+","+ad.offset);
-									}
-									
-									break;
-								case "<>":
-									if( Type == 0 )
-									{
-										Record1 =  Buffer.writeInt(-999999999);//-999999999 to byte[]
-										Record2 =  Buffer.writeInt(Integer.parseInt(rvar));//rvar(int) to byte[]
-									}
-									else if ( Type == 1 )
-									{
-										Record1 = Buffer.writeFloat(-999999999);//-9999999.99 to byte[]
-										Record2 = Buffer.writeFloat( (int)( Double.parseDouble(rvar)*100 ) );//rvar(float) to byte[]
-									}
-									else if ( Type == 2 )
-									{
-										Record1 = Buffer.writeString("\1");//\1 to byte[]
-										Record2 = Buffer.writeString(rvar);//rvar(float) to byte[]
-									}
-									ArrayList<address> add_1_0 = IndexManager.searchrecord(output_table, temp_index, Record1, Record2);
-									
-									System.out.println("<>_>:Record1:"+Record1+", Record2"+Record2);
-									for( address ad : add_1_0 )
-									{
-										System.out.println(ad.blockOffset+","+ad.offset);
-									}
-									
-									if( Type == 0 )
-									{
-										Record1 = Buffer.writeInt(Integer.parseInt(rvar));//rvar(int) to byte[]
-										Record2 = Buffer.writeInt(999999999);//999999999 to byte[]
-									}
-									else if ( Type == 1 )
-									{
-										Record1 = Buffer.writeFloat( (int)( Double.parseDouble(rvar)*100 ) );//rvar(float) to byte[]
-										Record2 = Buffer.writeFloat(999999999);//9999999.99 to byte[]
-									}
-									else if ( Type == 2 )
-									{
-										Record1 = Buffer.writeString(rvar);//rvar(string) to byte[]
-										Record2 = Buffer.writeString("\127");//????(a bit string) to byte[]
-									}
-									ArrayList<address> add_1_1 = IndexManager.searchrecord(output_table, temp_index, Record1, Record2);
-									
-									System.out.println("<>_<:Record1:"+Record1+", Record2"+Record2);
-									for( address ad : add_1_1 )
-									{
-										System.out.println(ad.blockOffset+","+ad.offset);
-									}
-									break;
-								case "<":
-									if( Type == 0 )
-									{
-										Record1 = Buffer.writeInt(Integer.parseInt(rvar));//rvar(int) to byte[]
-										Record2 = Buffer.writeInt(999999999);//999999999 to byte[]
-									}
-									else if ( Type == 1 )
-									{
-										Record1 = Buffer.writeFloat( (int)( Double.parseDouble(rvar)*100 ) );//rvar(float) to byte[]
-										Record2 = Buffer.writeFloat(999999999);//9999999.99 to byte[]
-									}
-									else if ( Type == 2 )
-									{
-										Record1 = Buffer.writeString(rvar);//rvar(string) to byte[]
-										Record2 = Buffer.writeString("\127");//????(a bit string) to byte[]
-									}
-									ArrayList<address> add_2 = IndexManager.searchrecord(output_table, temp_index, Record1, Record2);
-									
-									System.out.println("<:Record1:"+Record1+", Record2"+Record2);
-									for( address ad : add_2 )
-									{
-										System.out.println(ad.blockOffset+","+ad.offset);
-									}
-									
-									break;
-								case ">":
-									if( Type == 0 )
-									{
-										Record1 =  Buffer.writeInt(-999999999);//-999999999 to byte[]
-										Record2 =  Buffer.writeInt(Integer.parseInt(rvar));//rvar(int) to byte[]
-									}
-									else if ( Type == 1 )
-									{
-										Record1 = Buffer.writeFloat(-999999999);//-9999999.99 to byte[]
-										Record2 = Buffer.writeFloat( (int)( Double.parseDouble(rvar)*100 ) );//rvar(float) to byte[]
-									}
-									else if ( Type == 2 )
-									{
-										Record1 = Buffer.writeString("\1");//\1 to byte[]
-										Record2 = Buffer.writeString(rvar);//rvar(float) to byte[]
-									}
-									ArrayList<address> add_3 = IndexManager.searchrecord(output_table, temp_index, Record1, Record2);
-									
-									System.out.println(">:Record1:"+Record1+", Record2"+Record2);
-									for( address ad : add_3 )
-									{
-										System.out.println(ad.blockOffset+","+ad.offset);
-									}
-									
-									break;
-								case "<=":
-									if( Type == 0 )
-									{
-										Record1 = Buffer.writeInt(Integer.parseInt(rvar)); //rvar(int) to byte[]
-										Record2 = Buffer.writeInt(Integer.parseInt(rvar));//rvar(int) to byte[]
-									}
-									else if ( Type == 1 )
-									{
-										Record1 = Buffer.writeFloat( (int)( Double.parseDouble(rvar)*100 ) );//rvar(float) to byte[]
-										Record2 = Buffer.writeFloat( (int)( Double.parseDouble(rvar)*100 ) );//rvar(float) to byte[]
-									}
-									else if ( Type == 2 )
-									{
-										Record1 = Buffer.writeString(rvar);//rvar(string) to byte[]
-										Record2 = Buffer.writeString(rvar);//rvar(string) to byte[]
-									}
-									ArrayList<address> add_4_0 = IndexManager.searchrecord(output_table, temp_index, Record1, Record2);
-									
-									System.out.println("<=_=:Record1:"+Record1+", Record2"+Record2);
-									for( address ad : add_4_0 )
-									{
-										System.out.println(ad.blockOffset+","+ad.offset);
-									}
-									
-									if( Type == 0 )
-									{
-										Record1 = Buffer.writeInt(Integer.parseInt(rvar));//rvar(int) to byte[]
-										Record2 = Buffer.writeInt(999999999);//999999999 to byte[]
-									}
-									else if ( Type == 1 )
-									{
-										Record1 = Buffer.writeFloat( (int)( Double.parseDouble(rvar)*100 ) );//rvar(float) to byte[]
-										Record2 = Buffer.writeFloat(999999999);//9999999.99 to byte[]
-									}
-									else if ( Type == 2 )
-									{
-										Record1 = Buffer.writeString(rvar);//rvar(string) to byte[]
-										Record2 = Buffer.writeString("\127");//????(a bit string) to byte[]
-									}
-									ArrayList<address> add_4_1 = IndexManager.searchrecord(output_table, temp_index, Record1, Record2);
-									
-									System.out.println("<=_<:Record1:"+Record1+", Record2"+Record2);
-									for( address ad : add_4_1 )
-									{
-										System.out.println(ad.blockOffset+","+ad.offset);
-									}
-									
-									break;
-								case ">=":
-									if( Type == 0 )
-									{
-										Record1 = Buffer.writeInt(Integer.parseInt(rvar)); //rvar(int) to byte[]
-										Record2 = Buffer.writeInt(Integer.parseInt(rvar));//rvar(int) to byte[]
-									}
-									else if ( Type == 1 )
-									{
-										Record1 = Buffer.writeFloat( (int)( Double.parseDouble(rvar)*100 ) );//rvar(float) to byte[]
-										Record2 = Buffer.writeFloat( (int)( Double.parseDouble(rvar)*100 ) );//rvar(float) to byte[]
-									}
-									else if ( Type == 2 )
-									{
-										Record1 = Buffer.writeString(rvar);//rvar(string) to byte[]
-										Record2 = Buffer.writeString(rvar);//rvar(string) to byte[]
-									}
-									ArrayList<address> add_5_0 = IndexManager.searchrecord(output_table, temp_index, Record1, Record2);
-									
-									System.out.println(">=_=:Record1:"+Record1+", Record2"+Record2);
-									for( address ad : add_5_0 )
-									{
-										System.out.println(ad.blockOffset+","+ad.offset);
-									}
-									
-									if( Type == 0 )
-									{
-										Record1 =  Buffer.writeInt(-999999999);//-999999999 to byte[]
-										Record2 =  Buffer.writeInt(Integer.parseInt(rvar));//rvar(int) to byte[]
-									}
-									else if ( Type == 1 )
-									{
-										Record1 = Buffer.writeFloat(-999999999);//-9999999.99 to byte[]
-										Record2 = Buffer.writeFloat( (int)( Double.parseDouble(rvar)*100 ) );//rvar(float) to byte[]
-									}
-									else if ( Type == 2 )
-									{
-										Record1 = Buffer.writeString("\1");//\1 to byte[]
-										Record2 = Buffer.writeString(rvar);//rvar(float) to byte[]
-									}
-									ArrayList<address> add_5_1 = IndexManager.searchrecord(output_table, temp_index, Record1, Record2);
-									
-									System.out.println(">=_>:Record1:"+Record1+", Record2"+Record2);
-									for( address ad : add_5_1 )
-									{
-										System.out.println(ad.blockOffset+","+ad.offset);
-									}
-									
-									break;
+									Record1 = Buffer.writeFloat( (int)( Double.parseDouble(rvar)*100 ) );//rvar(float) to byte[]
+									Record2 = Buffer.writeFloat( (int)( Double.parseDouble(rvar)*100 ) );//rvar(float) to byte[]
 								}
-							}
-							else
+								else if ( Type == 2 )
+								{
+									Record1 = Buffer.writeString(rvar,temp_attri.ScaleByte);//rvar(string) to byte[]
+									Record2 = Buffer.writeString(rvar,temp_attri.ScaleByte);//rvar(string) to byte[]
+								}
+								System.out.println("=:Record1:"+Record1+", Record2"+Record2);
 
+								ArrayList<address> add_0 = IndexManager.searchrecord(output_table, temp_index, Record1, Record2);
+								
+								for( address ad : add_0 )
+								{
+									System.out.println("==>add_0");
+									System.out.println("===>Finall Address: ( "+ad.blockOffset+", "+ad.offset+" )");
+								}
+								
+								break;
+							case "<>":
+								if( Type == 0 )
+								{
+									Record1 =  Buffer.writeInt(-999999999);//-999999999 to byte[]
+									Record2 =  Buffer.writeInt(Integer.parseInt(rvar));//rvar(int) to byte[]
+								}
+								else if ( Type == 1 )
+								{
+									Record1 = Buffer.writeFloat(-999999999);//-9999999.99 to byte[]
+									Record2 = Buffer.writeFloat( (int)( Double.parseDouble(rvar)*100 ) );//rvar(float) to byte[]
+								}
+								else if ( Type == 2 )
+								{
+									Record1 = Buffer.writeString("\1",temp_attri.ScaleByte);//\1 to byte[]
+									Record2 = Buffer.writeString(rvar,temp_attri.ScaleByte);//rvar(float) to byte[]
+								}
+								ArrayList<address> add_1_0 = IndexManager.searchrecord(output_table, temp_index, Record1, Record2);
+								
+								System.out.println("<>_>:Record1:"+Record1+", Record2"+Record2);
+								
+								if( Type == 0 )
+								{
+									Record1 = Buffer.writeInt(Integer.parseInt(rvar));//rvar(int) to byte[]
+									Record2 = Buffer.writeInt(999999999);//999999999 to byte[]
+								}
+								else if ( Type == 1 )
+								{
+									Record1 = Buffer.writeFloat( (int)( Double.parseDouble(rvar)*100 ) );//rvar(float) to byte[]
+									Record2 = Buffer.writeFloat(999999999);//9999999.99 to byte[]
+								}
+								else if ( Type == 2 )
+								{
+									Record1 = Buffer.writeString(rvar,temp_attri.ScaleByte);//rvar(string) to byte[]
+									Record2 = Buffer.writeString("\127",temp_attri.ScaleByte);//????(a bit string) to byte[]
+								}
+								System.out.println("<>_<:Record1:"+Record1+", Record2"+Record2);
+								
+								ArrayList<address> add_1_1 = IndexManager.searchrecord(output_table, temp_index, Record1, Record2);
+								
+								for( address ad0 : add_1_0 )
+								{
+									for( address ad1 : add_1_1 )
+									{
+										if( ad0.equals(ad1) )
+										{
+											add.add(ad0);
+										}
+									}
+								}
+								
+								for( address ad : add )
+								{
+									System.out.println("==>add_1 (UNDER BUILDING!!");
+									System.out.println("===>Finall Address: ( "+ad.blockOffset+", "+ad.offset+" )");
+								}
+								break;
+							case "<":
+								if( Type == 0 )
+								{
+									Record1 = Buffer.writeInt(Integer.parseInt(rvar));//rvar(int) to byte[]
+									Record2 = Buffer.writeInt(999999999);//999999999 to byte[]
+								}
+								else if ( Type == 1 )
+								{
+									Record1 = Buffer.writeFloat( (int)( Double.parseDouble(rvar)*100 ) );//rvar(float) to byte[]
+									Record2 = Buffer.writeFloat(999999999);//9999999.99 to byte[]
+								}
+								else if ( Type == 2 )
+								{
+									Record1 = Buffer.writeString(rvar,temp_attri.ScaleByte);//rvar(string) to byte[]
+									Record2 = Buffer.writeString("\127",temp_attri.ScaleByte);//????(a bit string) to byte[]
+								}
+								System.out.println("<:Record1:"+Record1+", Record2"+Record2);
+								
+								ArrayList<address> add_2 = IndexManager.searchrecord(output_table, temp_index, Record1, Record2);
+								
+								for( address ad : add_2 )
+								{
+									add.add(ad);
+								}
+								
+								
+								for( address ad : add_2 )
+								{
+									System.out.println("==>add_2");
+									System.out.println("===>Finall Address: ( "+ad.blockOffset+", "+ad.offset+" )");
+								}
+								
+								break;
+							case ">":
+								if( Type == 0 )
+								{
+									Record1 =  Buffer.writeInt(-999999999);//-999999999 to byte[]
+									Record2 =  Buffer.writeInt(Integer.parseInt(rvar));//rvar(int) to byte[]
+								}
+								else if ( Type == 1 )
+								{
+									Record1 = Buffer.writeFloat(-999999999);//-9999999.99 to byte[]
+									Record2 = Buffer.writeFloat( (int)( Double.parseDouble(rvar)*100 ) );//rvar(float) to byte[]
+								}
+								else if ( Type == 2 )
+								{
+									Record1 = Buffer.writeString("\1",temp_attri.ScaleByte);//\1 to byte[]
+									Record2 = Buffer.writeString(rvar,temp_attri.ScaleByte);//rvar(float) to byte[]
+								}
+								System.out.println(">:Record1:"+Record1+", Record2"+Record2);
+								
+								ArrayList<address> add_3 = IndexManager.searchrecord(output_table, temp_index, Record1, Record2);
+								
+								for( address ad : add_3 )
+								{
+									add.add(ad);
+								}
+								
+								for( address ad : add_3 )
+								{
+									System.out.println("add_3");
+									System.out.println("===>Finall Address: ( "+ad.blockOffset+", "+ad.offset+" )");
+								}
+								
+								break;
+							case "<=":
+								if( Type == 0 )
+								{
+									Record1 = Buffer.writeInt(Integer.parseInt(rvar));//rvar(int) to byte[]
+									Record2 = Buffer.writeInt(999999999);//999999999 to byte[]
+								}
+								else if ( Type == 1 )
+								{
+									Record1 = Buffer.writeFloat( (int)( Double.parseDouble(rvar)*100 ) );//rvar(float) to byte[]
+									Record2 = Buffer.writeFloat(999999999);//9999999.99 to byte[]
+								}
+								else if ( Type == 2 )
+								{
+									Record1 = Buffer.writeString(rvar,temp_attri.ScaleByte);//rvar(string) to byte[]
+									Record2 = Buffer.writeString("\127",temp_attri.ScaleByte);//????(a bit string) to byte[]
+								}
+								System.out.println("<=_<:Record1:"+Record1+", Record2"+Record2);
+								
+								ArrayList<address> add_4 = IndexManager.searchrecord(output_table, temp_index, Record1, Record2);
+								
+								for( address ad : add_4 )
+								{
+									System.out.println("==>add_4");
+									System.out.println("===>Finall Address: ( "+ad.blockOffset+", "+ad.offset+" )");
+								}
+								
+								break;
+							case ">=":
+								if( Type == 0 )
+								{
+									Record1 =  Buffer.writeInt(-999999999);//-999999999 to byte[]
+									Record2 =  Buffer.writeInt(Integer.parseInt(rvar));//rvar(int) to byte[]
+								}
+								else if ( Type == 1 )
+								{
+									Record1 = Buffer.writeFloat(-999999999);//-9999999.99 to byte[]
+									Record2 = Buffer.writeFloat( (int)( Double.parseDouble(rvar)*100 ) );//rvar(float) to byte[]
+								}
+								else if ( Type == 2 )
+								{
+									Record1 = Buffer.writeString("\1",temp_attri.ScaleByte);//\1 to byte[]
+									Record2 = Buffer.writeString(rvar,temp_attri.ScaleByte);//rvar(float) to byte[]
+								}
+								System.out.println(">=_>:Record1:"+Record1+", Record2"+Record2);
+								
+								ArrayList<address> add_5 = IndexManager.searchrecord(output_table, temp_index, Record1, Record2);
+								
+								for( address ad : add_5 )
+								{
+									System.out.println("add_5");
+									System.out.println("===>Finall Address: ( "+ad.blockOffset+", "+ad.offset+" )");
+								}
+								
+								break;
+							}
+						}
+						//without index
+						//对于没有index的情况
+						//wherelist.lvars.size()次筛选，每次筛选都要遍历所有Attri，以及Attri中的item
+						//一个函数确定是否符合wherelist规定，如果为否直接删除
+						else
+						{						
+							//逐条记录查找
+							for( int Index_item = 0; Index_item < temp_attri.Length; Index_item++ )
 							{
 								switch(sign)
 								{
@@ -497,18 +485,20 @@ public class API {
 											}
 									}
 									break;
-								}
-							}//else
-						}//for
-						
-						output_table.Attributes.set(Index_Attri, temp_attri);
-						output_table.Records.set(Index_Attri, temp_record);
-					}//for
-				}//for
+								}//switch
+							}//for ( index_item < Attri.Length )
+							
+							output_table.Attributes.set(Index_Attri, temp_attri);
+							output_table.Records.set(Index_Attri, temp_record);
+						}//else(HasIndex == false) 这个Attribute没有index的情况
+					}//for ( index_attri < table.AttriNum ) 每一个条件的所有Attribute都判断（跳）完之后
+					
+				}//for ( vars ) 所有条件都判断完之后
+				
 				database.Tables.set(Index_Table, output_table);
-			}//else
+			}//else ( wherelist != null )
 			OutputTable(output_table);
-		}//if
+		}//if(表存在）
 		return true;
 	}
 	
@@ -715,7 +705,7 @@ public class API {
 				}
 				
 				int MaxRecsPerBlock = 64 / temp_table.RecordLength;
-				temp_table.BlockNum = temp_table.RowNum / MaxRecsPerBlock;
+				temp_table.BlockNum = (int) Math.ceil( (double)temp_table.RowNum / (double) MaxRecsPerBlock);
 				
 				database.Tables.set(Index_Table, new_table);
 				System.out.println(new_table);
@@ -891,7 +881,7 @@ public class API {
 //		System.out.println("!!!"+database.Tables.get(Index_Table).Records.get(0).Str.get(0));
 		
 		int MaxRecsPerBlock = 64 / temp_table.RecordLength;
-		temp_table.BlockNum = temp_table.RowNum / MaxRecsPerBlock;
+		temp_table.BlockNum = (int) Math.ceil( (double)temp_table.RowNum / (double) MaxRecsPerBlock);
 
 		RecordManager1.GenerateRecordFile(temp_table);
 		

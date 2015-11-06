@@ -15,4 +15,12 @@ public class Index {
 		this.Attri = Attribute;
 		this.Size = Size;
 	}
+	public Index(String indexname, String tableName, int attr, int size, int blocknum, int rootnum) {
+		this.IndexName = indexname;
+		this.TableName = tableName;
+		this.Attri = attr;
+		this.Size = size;
+		this.BlockNum = blocknum;
+		this.RootNum = rootnum;
+	}
 }

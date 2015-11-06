@@ -1,7 +1,10 @@
 package miniSQL;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -16,6 +19,19 @@ public class interpreter {
 	private static Opt Option=new Opt();
 	
 	public static void main(String[] args) throws IOException{
+//		List<File> ll_c = getFiles(new File(".."),"cat");
+//		List<File> ll_r = getFiles(new File(".."),"rec");
+//        for (File ff_c : ll_c) {
+//        	Database.RebuildCat(ff_c);
+//        }
+//        for (File ff_r : ll_r) {
+//        	Database.RebuildRec(ff_r);
+//        }
+		List<File> ll = getFiles(new File(".."),"cat");
+		for (File ff : ll) {
+        	Database.Rebuild(ff);
+        }
+			
 		System.out.println("Welcome to the MySQL monitor. Commands end with ;.");
 		System.out.println("Server version: 1.0");
 		System.out.println("Copyright kly. All rights reserved.");
@@ -52,7 +68,6 @@ public class interpreter {
 					System.out.println("Bye!");
 					return;
 				}
-				
 				else if( FILE_FLAG )
 				{
 					System.out.println("filename:"+filename);
@@ -81,13 +96,15 @@ public class interpreter {
 							}
 						}
 					}
+					System.out.println("Out of file!");
 					filename = "";
 					FILE_FLAG = false;
 				}
-				else
-					System.out.print("MiniSQL>>");
+				
+				System.out.print("MiniSQL>>");
 			}
 			//System.out.println(query);
+			
 		}
 		
 	}
@@ -143,4 +160,23 @@ public class interpreter {
         else
         	Exception.TypeError();
 	}
+	
+	 public static List<File> getFiles(File fileDir, String fileType) {
+	        List<File> lfile = new ArrayList<File>();
+	        File[] fs = fileDir.listFiles();
+	        for (File f : fs) {
+	            if (f.isFile()) {
+	                if (fileType
+	                        .equals(f.getName().substring(
+	                                f.getName().lastIndexOf(".") + 1,
+	                                f.getName().length())))
+	                    lfile.add(f);
+	            } else {
+	                List<File> ftemps = getFiles(f,fileType);
+	                lfile.addAll(ftemps);
+	            }
+	        }
+	        return lfile;
+	    }
+
 }

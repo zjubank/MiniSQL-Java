@@ -33,15 +33,6 @@ public class Attribute {
 		}
 	}
 	
-	public void CreateIndexOnAttri()
-	{
-		this.HasIndex = true;
-	}
-	
-	public void DeleteIndexOnAttri()
-	{
-		this.HasIndex = false;
-	}
 //	By lhq
 //	public boolean unique;
 //	public boolean Primer;
