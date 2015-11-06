@@ -20,9 +20,30 @@ public class Database {
 	{
 		String filename = f.getName();
 		String tablename = filename.substring(0, filename.indexOf("."));
-		Table temp_table = new Table(tablename);
+//		Table temp_table = new Table(tablename);
 		
-		RecordManager1.ReadFile(tablename);
+//		int Index_Table = -1;
+//		for( int i = 0; i < API.database.Tables.size(); i++ )
+//		{
+//			if( API.database.Tables.get(i).TableName.equals(tablename))
+//			{
+//				Index_Table = i;
+//				break;
+//			}
+//		}
+//		if( Index_Table == -1 )
+//		{
+			Table temp_table = RecordManager1.ReadFile(tablename);
+			System.out.println("Pre:"+API.database.Tables.size());
+			API.database.Tables.add( temp_table );
+			System.out.println("After:"+API.database.Tables.size());
+//			System.out.println(API.database.Tables.get(0).Records.get(0).Str.get(0));
+			Table temp_table_2 = API.database.Tables.get(0);
+//		}
+//		else
+//		{
+//			API.database.Tables.set(Index_Table, RecordManager1.ReadFile(tablename));
+//		}
 	}
 	
 //	public static void RebuildCat(File f_cat) throws IOException

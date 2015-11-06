@@ -36,7 +36,7 @@ public class RecordManager1 {
 				if (Rec.type==0) {
 //					System.out.println("j: "+j+". i: "+i+". (RecordManager1)");
 //					System.out.println("Record Int Has: "+ Rec.Int.size()+". (RecordManager1)");
-					str=str+writeInt(Rec.Int.get(0));
+					str=str+writeInt(Rec.Int.get(i));
 //					System.out.println("Write Int OK!");
 					System.out.println("Str At0: "+str);
 
@@ -162,7 +162,8 @@ public class RecordManager1 {
 //		}
 //	}
 	
-	public static boolean ReadFile(String tablename) throws IOException
+	public static Table ReadFile(String tablename) throws IOException
+
 	{
 		Table temp_table = new Table(tablename);
 		
@@ -229,22 +230,33 @@ public class RecordManager1 {
 			default: break;
 			}
 			temp_table.Attributes.add(temp_attri);
-			
+
 			Counter++;
 		}
 		
-		Counter = 0;
-//		while( (str = Rbin.readLine()) != null )
+//		Counter = 0;
+		//鐜板湪Rec鏂囦欢鍙湁涓�琛�
+		str = Rbin.readLine();
+		//gai
+		int AttriNum = temp_table.AttriNum;
+		int RowNum = 0;
+		Record[] Rec=new Record[AttriNum];
+		for (int i=0;i<AttriNum;i++){
+			int type=temp_table.Attributes.get(i).Type;
+			Rec[i]=new Record(type);
+		}
+		//gai_end
+		while( str.length() > 0  )
 		{
-			//现在Rec文件只有一行
-			str = Rbin.readLine();
+			RowNum++;
 			if( str == null )
 			{
 				System.out.println("[Warning] Table '"+tablename+"': Record is Empty!");
-					return false;		
-			}
-
-			int AttriNum = temp_table.AttriNum;
+					return null;		
+			}		
+			System.out.println("AttriNum:"+temp_table.AttriNum);
+			
+			
 			for( int i = 0; i < AttriNum; i++ )
 			{
 				switch(temp_table.Attributes.get(i).Type)
@@ -264,11 +276,12 @@ public class RecordManager1 {
 					
 					System.out.println("->"+temp_int);
 					System.out.println("-->"+str);
-					//这里需要写入
-					Record temp_record_int = new Record(0);
-					temp_table.Records.add(temp_record_int);
-					temp_record_int.Int.add(temp_int);
-					temp_table.Records.set(i, temp_record_int);
+					//杩欓噷闇�瑕佸啓鍏�
+					//Record temp_record_int = new Record(0);
+					//temp_table.Records.add(temp_record_int);
+					//temp_record_int.Int.add(temp_int);
+					//temp_table.Records.set(i, temp_record_int);
+					Rec[i].add(temp_int);
 					break;
 				case 1:
 					String temp_part_dou = str.substring(0,11);
@@ -284,11 +297,12 @@ public class RecordManager1 {
 					
 					System.out.println("->"+temp_dou);
 					System.out.println("-->"+str);
-					//这里需要写入
-					Record temp_record_dou = new Record(1);
-					temp_table.Records.add(temp_record_dou);
-					temp_record_dou.Dou.add(temp_dou);
-					temp_table.Records.set(i, temp_record_dou);
+					//杩欓噷闇�瑕佸啓鍏�
+					//Record temp_record_dou = new Record(1);
+					//temp_table.Records.add(temp_record_dou);
+					//temp_record_dou.Dou.add(temp_dou);
+					//temp_table.Records.set(i, temp_record_dou);
+					Rec[i].add(temp_dou);
 					break;
 				case 2:
 					String temp_part_str = str.substring(0, temp_table.Attributes.get(i).ScaleByte);
@@ -307,14 +321,15 @@ public class RecordManager1 {
 					String temp_str = temp_part_str.substring(startpos+1,temp_part_str.length());
 					str = str.substring(temp_part_str.length());
 					
-//					System.out.println("==>"+temp_str);
+					System.out.println("==>"+temp_str);
 //					System.out.println("==>temp_strlength:"+temp_str);
-//					System.out.println("-->Last:"+str);
-					//这里需要写入
-					Record temp_record_str = new Record(2);
-					temp_table.Records.add(temp_record_str);
-					temp_record_str.Str.add(temp_str);
-					temp_table.Records.set(i, temp_record_str);
+					System.out.println("-->Last:"+str);
+					//杩欓噷闇�瑕佸啓鍏�
+					//Record temp_record_str = new Record(2);
+					//temp_table.Records.add(temp_record_str);
+					//temp_record_str.Str.add(temp_str);
+					//temp_table.Records.set(i, temp_record_str);
+					Rec[i].add(temp_str);
 					break;
 				default:
 					System.out.println("Unkown Type!");
@@ -322,11 +337,18 @@ public class RecordManager1 {
 				}
 			}
 			
-			Counter++;
+//			Counter++;
 		}
-		API.database.Tables.add(temp_table);
-		return true;
+		//gai
+		for (int i=0;i<AttriNum;i++){
+			temp_table.Records.add(Rec[i]);
+		}
+		//gai end
+//		API.database.Tables.set(Index_Table, temp_table);
+		temp_table.RowNum = RowNum;
+		return temp_table;
 	}
+	
 //
 //	boolean ReadFile(Table t, File f) throws IOException{
 //		FileInputStream file=new FileInputStream(FileName);
