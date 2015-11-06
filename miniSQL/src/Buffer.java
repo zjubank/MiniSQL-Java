@@ -5,7 +5,7 @@ import java.util.Arrays;
 public class Buffer {
 	public String fileName;
 	public byte[] block;
-	public static final int Maxbyte = 64;
+	public static final int Maxbyte = 128;
 	//public int recordNum;
 	public int blockOffset;
 	public int RecordNum;
@@ -33,6 +33,50 @@ public class Buffer {
 		block = new byte[Maxbyte];
 		this.clear(0, Maxbyte);
 	}
+	public static int readInt(byte[] record) {
+		int sum = 0;
+
+		for (int i = 1; i < 11; i++) {
+			sum = sum * 10 + record[i]-'0';
+		}
+		
+		if (record[0] >= 0) 
+	    return sum;
+		else return -sum;
+	}
+	
+	public static String readString(byte[] record) {
+		String ans="";
+		for (int i = 0; i < record.length; i++) {
+			ans = ans + (char)record[i];
+		}
+		return ans;
+	}
+	
+	public static byte[] writeInt(int record) {
+		byte[] ans = new byte[11];
+		if (record < 0) {
+			ans[0] = '0';
+			record = -record;
+		}
+		else ans[0] = '1';
+		
+		for (int i = 1; i < 11; i++) {
+			System.out.println(record % 10);
+			ans [11-i] = (byte) (record % 10 + 48);
+			record = record / 10;
+		}
+		return ans;
+	}
+	
+	public static byte[] writeString(String record) {
+		byte[] result = null;
+		for( int i = 1; i < record.length(); i++ )
+		{
+			result[i] = (byte) (record.charAt(i));
+		}
+		return result;
+	}
 	
 	public void clear(int start, int length) {
 		for (int i = start; i < start + length; i++) {
@@ -54,21 +98,44 @@ public class Buffer {
 		return value;
 	}
 	
-	public void setChar() {
-		
+	public static double readFloat(byte[] record) {
+		double sum = 0;
+		for (int i = 1; i < 7; i++) {
+			sum = sum*10 + record[i]-'0';
+		}
+		for (int i = 8; i< 11; i++) {
+			sum = sum*10 + record[i] - '0';
+		}
+		sum = sum *1.0 /1000;
+		if (record[0] >= 0) 
+	    return sum;
+		else return -sum;
 	}
 	
-	public void getChar() {
+	public static byte[] writeFloat(int record) {
+		byte[] ans = new byte[11];
+		if (record < 0) {
+			ans[0] = '0';
+			record = - record;
+		}
+		else ans[0] = '1';
 		
-	}
-	
-	public void setFloat() {
-		
-	}
-	
-	public float getFloat() {
-		float value = (float) 1.0;
-		return value;
+		char[] num = new char[11];
+		for (int i = 1; i < 4; i++) {
+			System.out.println(record % 10);
+			num [11-i] = (char)(record % 10 + '0');
+			record = record / 10;
+		}
+		num[7] = '.';
+		for (int i = 5; i < 11; i++) {
+			System.out.println(record % 10);
+			num [11-i] = (char)(record % 10 + '0');
+			record = record / 10;
+		}
+		for (int i = 1; i < 11; i++) {
+			ans[i] = (byte) num[i];
+		}
+		return ans;
 	}
 	
 	public void insertkey(int start, byte[] key, address a) {

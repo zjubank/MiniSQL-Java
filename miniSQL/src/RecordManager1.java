@@ -10,7 +10,7 @@ public class RecordManager1 {
 		
 		
 		GeneFile(f);
-		System.out.println("*");
+//		System.out.println("*");
 //		System.out.println(1);
 		String Sout;
 		WriteFile(t,f);
@@ -63,9 +63,10 @@ public class RecordManager1 {
 				str=str.substring(Database.MaxBlock);
 			}
 //			System.out.println("Str At1: "+str);
-			while (str.length()<Database.MaxBlock&&str.length()!=0){
-				str=str+"*";
-			}
+			//现在不需要补全了
+//			while (str.length()<Database.MaxBlock&&str.length()!=0){
+//				str=str+"*";
+//			}
 			System.out.println("Str Final: "+str);
 
 //			System.out.println("str="+str);
@@ -130,10 +131,28 @@ public class RecordManager1 {
 	}
 	
 	public static String writeString(String record, int maxlength) {
-		for( int i = record.length(); i < maxlength; i++)
+//		System.out.println("==Record:"+record);
+//		System.out.println("maxlength:"+maxlength+", r.length:"+record.length());
+//		System.out.println("==Record.length:"+record.length());
+//		System.out.println("==Add:"+(maxlength-record.length()));
+		String prestr = "";
+		for( int i = 0; i < maxlength-record.length(); i++ )
 		{
-			record += '\1';
+//			System.out.print("*");
+//			System.out.println("");
+			prestr += "\1";
 		}
+//		System.out.println("==Prestrlength:"+prestr.length());
+		record = prestr + record;
+		
+//		System.out.println("==>Record:");
+//		for( int i = 0; i < record.length(); i++ )
+//		{
+//			System.out.print(record.charAt(i));
+//		}
+//		System.out.println("");
+//		System.out.println("==>Recordlength:"+record.length());
+//		System.out.println("==>Record:"+record);
 		return record;
 	}
 	
@@ -260,13 +279,25 @@ public class RecordManager1 {
 					temp_table.Records.set(i, temp_record_dou);
 					break;
 				case 2:
-					String temp_part_str = str.substring(0, temp_table.Attributes.get(i).Scale);
-					int endpos = temp_part_str.indexOf("\1");
-					String temp_str = temp_part_str.substring(0,endpos);
+					String temp_part_str = str.substring(0, temp_table.Attributes.get(i).ScaleByte);
+					int startpos = temp_part_str.lastIndexOf("\1");
+					
+//					System.out.println("temp_part_str:"+temp_part_str);
+//					System.out.println("==temp_part_str:");
+//					for( int ii = 0; ii < temp_part_str.length(); ii++)
+//					{
+//						System.out.print(temp_part_str.charAt(ii));
+//					}
+//					System.out.println("");
+//					System.out.println("==length:"+temp_part_str.length());
+//					System.out.println("==startpos\1:"+startpos);
+					
+					String temp_str = temp_part_str.substring(startpos+1,temp_part_str.length());
 					str = str.substring(temp_part_str.length());
 					
-					System.out.println("->"+temp_str);
-					System.out.println("-->Last:"+str);
+//					System.out.println("==>"+temp_str);
+//					System.out.println("==>temp_strlength:"+temp_str);
+//					System.out.println("-->Last:"+str);
 					//这里需要写入
 					Record temp_record_str = new Record(2);
 					temp_table.Records.add(temp_record_str);

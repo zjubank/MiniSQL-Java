@@ -1,12 +1,17 @@
 package miniSQL;
 
 import java.util.Scanner;
+import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 
 public class interpreter {
 	private static boolean QUIT_FLAG = false;
+	private static boolean FILE_FLAG = false;
+	private static String filename = "";
 	private static String query="";
-	private static Exception Excep=new Exception();
+//	private static Exception Excep=new Exception();
 	private static DisPreSpace DisSpace=new DisPreSpace();
 	private static Opt Option=new Opt();
 	
@@ -27,7 +32,7 @@ public class interpreter {
 		//welcome();
 		System.out.print("MiniSQL>>");
 		Scanner s = new Scanner(System.in);
-		while ((str=s.nextLine()).length()!=0)
+		while ((str=s.nextLine()) != null )
 		{
 			int pos_of_semicolon;
 			pos_of_semicolon=str.indexOf(";");
@@ -47,6 +52,38 @@ public class interpreter {
 					System.out.println("Bye!");
 					return;
 				}
+				
+				else if( FILE_FLAG )
+				{
+					System.out.println("filename:"+filename);
+					FileInputStream file = new FileInputStream(filename);
+					InputStreamReader fin = new InputStreamReader(file);
+					BufferedReader bin = new BufferedReader(fin);
+					
+					while( (str = bin.readLine()) != null )
+					{
+						pos_of_semicolon=str.indexOf(";");
+						if (pos_of_semicolon==-1)
+							query=query+str+" ";
+							//query not finished
+						else {
+							substr = str.substring(0,pos_of_semicolon);
+							query=query+substr;
+							//query finished.3
+//							System.out.println(query);
+							OptionDefine();
+							
+							query="";
+							if( QUIT_FLAG )
+							{
+								System.out.println("Bye!");
+								continue;
+							}
+						}
+					}
+					filename = "";
+					FILE_FLAG = false;
+				}
 				else
 					System.out.print("MiniSQL>>");
 			}
@@ -61,7 +98,7 @@ public class interpreter {
 //		System.out.println(temp_query);
 		temp_query=DisSpace.dislodge_space(temp_query);
 		if (temp_query.isEmpty()) {
-			Excep.IsEmpty();
+			Exception.IsEmpty();
 			return;
 		}
 		int split_pos=temp_query.indexOf(" ");
@@ -74,6 +111,7 @@ public class interpreter {
 			rest = temp_query.substring(split_pos+1);
 		}
 //		System.out.println(option+"/"+rest);
+
 		allocate(option,rest);
 	}
 	
@@ -96,8 +134,13 @@ public class interpreter {
         else if (option.equalsIgnoreCase("quit"))
         	QUIT_FLAG = true;
         else if (option.equalsIgnoreCase("execfile"))
-        	Option.Exec(rest);
+        {
+        	filename = rest;
+        	filename = filename.replace(" ", "");
+        	filename = filename.replace(";", "");
+        	FILE_FLAG = true;
+        }
         else
-        	Excep.TypeError();
+        	Exception.TypeError();
 	}
 }

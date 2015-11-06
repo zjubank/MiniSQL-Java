@@ -105,6 +105,7 @@ public class BufferManager {
 						System.out.println("RecordNum = "+thisblock.RecordNum);
 					}
 					thisblock.block = b;
+					System.out.println("Record block = " + Arrays.toString(b));
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();

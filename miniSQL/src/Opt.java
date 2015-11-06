@@ -5,7 +5,7 @@ import java.util.*;
 
 public class Opt {
 	private DisPreSpace DisSpace=new DisPreSpace();
-	private Exception Excep= new Exception();
+//	private Exception Excep= new Exception();
 	
 	//===============================create===========================//
 	void Create(String s) throws IOException{
@@ -27,7 +27,7 @@ public class Opt {
 				System.out.println("Database Create Success");
 			}
 			else{
-				Excep.NameProblem("DATABASE","NULL");
+				Exception.NameProblem("DATABASE","NULL");
 			}
 		}
 		//=========================Create Table============================
@@ -53,11 +53,11 @@ public class Opt {
 			if (!name.isEmpty())
 			{
 				if (Check_nameLegal(name)) 
-					Excep.NameProblem("TABLE","ILLEGAL");
+					Exception.NameProblem("TABLE","ILLEGAL");
 			}
 			else
 			{
-				Excep.NameProblem("TABLE","NULL");
+				Exception.NameProblem("TABLE","NULL");
 			}
 			
 			if (!infor.isEmpty())
@@ -75,7 +75,7 @@ public class Opt {
 			rest=DisSpace.dislodge_space(rest);
 			int on_pos=rest.indexOf("on");
 			if (on_pos==-1){
-				Excep.CreateError();
+				Exception.CreateError();
 				return;
 			}
 			index_name=rest.substring(0,on_pos);
@@ -89,7 +89,7 @@ public class Opt {
 			brac1=after_on.indexOf("(");
 			brac2=after_on.lastIndexOf(")");
 			if (brac1==-1||brac2==-1){
-				Excep.CreateError();
+				Exception.CreateError();
 				return;
 			}
 			System.out.println(brac1+"/"+brac2);
@@ -102,7 +102,7 @@ public class Opt {
 			if (!over_rest.isEmpty())
 				over_rest=DisSpace.dislodge_space(over_rest);
 			if (!over_rest.isEmpty()){
-				Excep.CreateError();
+				Exception.CreateError();
 				return;
 			}
 			
@@ -111,7 +111,7 @@ public class Opt {
 			System.out.println(index_name);
 			System.out.println(table_name+"    "+sname);
 		}
-		else Excep.CreateType();
+		else Exception.CreateType();
 	}
 	
 	
@@ -129,7 +129,7 @@ public class Opt {
 	//==================================select================================//
 	
 	
-	void Select(String s){
+	void Select(String s) throws IOException{
 		int split,dist,where_pos;
 		String str=s, before_from="", after_from="", distinct="";
 		String after_where="";
@@ -137,7 +137,7 @@ public class Opt {
 		
 		split=str.indexOf("from");
 		if (split==-1) {
-			Excep.SelectError();
+			Exception.SelectError();
 			return;
 		}
 		before_from=str.substring(0,split);
@@ -239,7 +239,7 @@ public class Opt {
 		int where_place;
 		String from, after_from, table_name,after_where;
 		if (from_space_place==-1){
-			Excep.DeleteError();
+			Exception.DeleteError();
 			return;
 		}
 		from=str.substring(0,from_space_place);
@@ -247,7 +247,7 @@ public class Opt {
 		from=DisSpace.dislodge_space(from);
 		after_from=DisSpace.dislodge_space(after_from);
 		if (!from.equalsIgnoreCase("from")){
-			Excep.DeleteError();
+			Exception.DeleteError();
 			return;
 		}
 		
@@ -280,7 +280,7 @@ public class Opt {
 		String str=DisSpace.dislodge_space(s);
 		int type_space=str.indexOf(" ");
 		if (type_space==-1){
-			Excep.DropError();
+			Exception.DropError();
 			return;
 		}
 		String type;
@@ -297,7 +297,7 @@ public class Opt {
 			
 			API.DropIndex(name);
 		}
-		else Excep.DropError();
+		else Exception.DropError();
 		
 	}
 	
@@ -315,7 +315,7 @@ public class Opt {
 		rest=DisSpace.dislodge_space(rest);
 		if (!if_into.equals("into")){
 //			System.out.println("Error at Poit 1.");
-			Excep.InsertError();
+			Exception.InsertError();
 			return;
 		}
 		String if_values;
@@ -323,7 +323,7 @@ public class Opt {
 		values_pos=rest.indexOf("values");
 		if (values_pos==-1){
 //			System.out.println("Error at Poit 2.");
-			Excep.InsertError();
+			Exception.InsertError();
 			return;
 		}
 		String names=rest.substring(0,values_pos);
@@ -333,7 +333,7 @@ public class Opt {
 		String[] all_value=new String[32];
 		if (values.charAt(0)!='('||values.charAt(values.length()-1)!=')'){
 //			System.out.println("Error at Poit 3.");
-			Excep.InsertError();
+			Exception.InsertError();
 			return;
 		}
 		values=values.substring(1,values.length()-1);
@@ -341,7 +341,7 @@ public class Opt {
 		all_value=split_values(values);
 		if (all_value==null){
 			System.out.println("Error at Poit 4.");
-			Excep.InsertError();
+			Exception.InsertError();
 			return;
 		}
 		//operate(names,all_value)
@@ -373,7 +373,7 @@ public class Opt {
 			}
 			if (i==31){
 //				System.out.println("Error at Poit 5.");
-				Excep.InsertErrorOutOfBound();
+				Exception.InsertErrorOutOfBound();
 				return values;
 			}
 			sub_split=DisSpace.dislodge_space(sub_split);
@@ -381,7 +381,7 @@ public class Opt {
 			
 			/*if (sub_split.charAt(0)!='\''||sub_split.charAt(sub_split.length()-1)!='\''){
 //				System.out.println("Error at Poit 6.");
-				Excep.InsertError();
+				Exception.InsertError();
 				return null;
 			}
 			sub_split=sub_split.substring(1,sub_split.length()-1);*/
@@ -453,9 +453,9 @@ public class Opt {
 			
 			
 			if (!name.isEmpty()){
-				if (Check_nameLegal(name)) Excep.NameProblem("VAR","ILLEGAL");
+				if (Check_nameLegal(name)) Exception.NameProblem("VAR","ILLEGAL");
 			}
-			else Excep.NameProblem("VAR","NULL");
+			else Exception.NameProblem("VAR","NULL");
 			
 			lastcomma=comma+1;
 			comma=str.indexOf(",", lastcomma);
@@ -535,7 +535,7 @@ public class Opt {
 			brac1=rest.indexOf("(");
 			brac2=rest.lastIndexOf(")");
 			if (brac1==-1||brac2==-1){
-				Excep.CreateError();
+				Exception.CreateError();
 				return 0;
 			}
 			sname=rest.substring(brac1+1,brac2);
@@ -566,7 +566,7 @@ public class Opt {
 				brac1=rest.indexOf("(");
 				brac2=rest.lastIndexOf(")");
 				if (brac1==-1||brac2==-1){
-					Excep.CreateError();
+					Exception.CreateError();
 					return 0;
 				}
 				sname=rest.substring(brac1+1,brac2);

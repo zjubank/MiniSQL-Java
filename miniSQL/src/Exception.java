@@ -1,34 +1,42 @@
 package miniSQL;
 
 public class Exception {
-	void IsEmpty(){
+	public static void IsEmpty(){
 		System.out.println("The Option is Empty!");
 	}
-	void CreateType(){
+	public static void CreateType(){
 		System.out.println("Undefined Type in CREATE!");
 	}
-	void CreateError(){
+	public static void CreateError(){
 		System.out.println("Illegal Expression in CREATE!");
 	}
-	void NameProblem(String type,String Prob){
+	public static void NameProblem(String type,String Prob){
 		System.out.println("Illegal Name Defined:"+type+":"+Prob);
 	}
-	void SelectError(){
+	public static void SelectError(){
 		System.out.println("Illegal Expression in SELECT!");
 	}
-	void DeleteError(){
+	public static void DeleteError(){
 		System.out.println("Illegal Expression in DELETE");
 	}
-	void DropError(){
+	public static void DropError(){
 		System.out.println("Illegal Expression in DROP");
 	}
-	void InsertError(){
+	public static void InsertError(){
 		System.out.println("Illegal Expression in INSERT");
 	}
-	void InsertErrorOutOfBound(){
+	public static void InsertErrorOutOfBound(){
 		System.out.println("The scale of insert is out of bound. Only reseave the first 32 values.");
 	}
-    void TypeError(){
+	public static void TypeError(){
         System.out.println("Illegal type expression.");
+    }
+	public static  void TableIndexError()
+    {
+    	System.out.println("No such table!");
+    }
+	public static void AttriIndexError()
+    {
+		System.out.println("No such Attribute!");
     }
 }

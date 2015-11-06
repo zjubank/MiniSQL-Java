@@ -1,6 +1,7 @@
 package miniSQL;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 public class BplusTree {
@@ -14,14 +15,14 @@ public class BplusTree {
 	private Index index;
 	Buffer Root; //根buffer块
 	
-	public BplusTree(Index index){
+	public BplusTree(Index index) throws IOException{
 		/* 加入文件的建立？*/
 		try{	
 			 filename = index.IndexName + ".index";
 			 PrintWriter out = new PrintWriter( new BufferedWriter(new FileWriter(new File(filename))));
 			 //out.write("#@0\r\n#&0\r\n");
 			 out.close();
-		}catch(IOException e){
+		}catch(IndexOutOfBoundsException e){
 			 System.err.println("create index failed !");
 	    }
 		//System.out.println("in B+tree");
@@ -49,6 +50,17 @@ public class BplusTree {
 		System.out.println("MaxIndex = "+MaxIndex+" MinIndex = "+ MinIndex +" Max = "+ Max +" Min = "+ Min+" rootblocknum = " + rootBlockNum);
 		
 		new LeafNode(Root=BufferManager.getblock(rootBlockNum),true);
+	}
+	public int compare(byte[] buffer1,byte[] buffer2) {
+		
+		for (int i = 0, j = 0; i < buffer1.length && j < buffer2.length; i++, j++) {
+			int a = (buffer1[i] & 0xff);
+			int b = (buffer2[j] & 0xff);
+			if (a != b) {
+				return a - b;
+			}
+		}
+		return buffer1.length - buffer2.length;
 	}
 	public void insert(byte[] key, address a){
 		//System.out.println("in tree insert");
@@ -105,7 +117,7 @@ public class BplusTree {
 		//System.out.println(index.RootNum);
 	}
 	
-	public address search(byte[] key) {
+/*	public address search(byte[] key1) {
 		TreeNode rootnode;
 		if (Root.block[0] == '0') {
 			rootnode = new InnerNode(Root, true);
@@ -114,23 +126,105 @@ public class BplusTree {
 			rootnode = new LeafNode(Root,true);
 		}
 		
-		byte[] attrkey = new byte[index.Size]; //要把key扩展为跟现在的key一样长
-		
-		for (int i = 0; i < key.length; i++) {
-			attrkey[i] = key[i];
+		byte[] attrkey1 = new byte[index.Size]; //要把key扩展为跟现在的key一样长
+		for (int i = 0; i < key1.length; i++) {
+			attrkey1[i] = key1[i];
 		}
-		for (int i = key.length; i < index.Size; i++) {
-			attrkey[i] = '*'; //没有值的用*填塞。
+		for (int i = key1.length; i < index.Size; i++) {
+			attrkey1[i] = '*'; //没有值的用*填塞。
+		}
+
+		
+		return rootnode.search(attrkey1);
+	}*/
+	
+	public ArrayList<address> search(byte[] key1, byte[] key2) {
+		TreeNode rootnode;
+		if (Root.block[0] == '0') {
+			rootnode = new InnerNode(Root, true);
+		}
+		else {
+			rootnode = new LeafNode(Root,true);
 		}
 		
-		return rootnode.search(attrkey);
+		byte[] attrkey1 = new byte[index.Size]; //要把key扩展为跟现在的key一样长
+		byte[] attrkey2 = new byte[index.Size];
+		for (int i = 0; i < key1.length; i++) {
+			attrkey1[i] = key1[i];
+		}
+		for (int i = 0; i < key2.length; i++) {
+			attrkey2[i] = key2[i];
+		}
+		for (int i = key1.length; i < index.Size; i++) {
+			attrkey1[i] = '*'; //没有值的用*填塞。
+		}
+		for (int i = key2.length; i < index.Size; i++) {
+			attrkey2[i] = '*'; //没有值的用*填塞。
+		}
+		
+		int begin = rootnode.search(attrkey1);
+		int end = rootnode.search(attrkey2);
+		System.out.println("begin = " + begin + "end = " + end);
+		ArrayList<address> a = new ArrayList<address>();
+		
+		Buffer searchblock = BufferManager.getblock(begin);
+		int keynum = searchblock.getInt(1);
+		int start = 17;
+		for (int i = 0; i < keynum; i++) {
+			start = 17 + i * (index.Size + 8);
+			if (compare(attrkey1,searchblock.getBytes(start, index.Size)) <= 0){  
+				//find = true;
+				//return searchblock.blockOffset;
+                //break;  
+				address b = new address();
+				b.blockOffset = searchblock.getInt(start - 8);
+				b.offset = searchblock.getInt(start - 4);
+				a.add(b);
+            }  
+		}
+		
+		int nextBlockNum = searchblock.getInt(9 + keynum * (index.Size + 8));
+		
+		while (nextBlockNum != end) { //没有到end block
+			searchblock = BufferManager.getblock(nextBlockNum); //更新中间block
+			keynum = searchblock.getInt(1); //更新keynum
+			start = 17; 						
+			for (int i = 0; i < keynum; i++) {
+				start = 17 + i * (index.Size + 8); //每一个都要输出
+					address b = new address();
+					b.blockOffset = searchblock.getInt(start - 8);
+					b.offset = searchblock.getInt(start - 4);
+					a.add(b);       
+			}
+			nextBlockNum = searchblock.getInt(9 + keynum * (index.Size + 8));
+		}
+		
+		searchblock = BufferManager.getblock(nextBlockNum);
+		keynum = searchblock.getInt(1); //更新keynum
+		start = 17; 	
+		for (int i = 0; i < keynum; i++) {
+			start = 17 + i * (index.Size + 8);
+			if (compare(attrkey2,searchblock.getBytes(start, index.Size)) >= 0){  
+				//find = true;
+				//return searchblock.blockOffset;
+                //break;  
+				address b = new address();
+				b.blockOffset = searchblock.getInt(start - 8);
+				b.offset = searchblock.getInt(start - 4);
+				a.add(b);
+            }  
+		}
+		return a;
+		//return rootnode.search(attrkey1,attrkey2);
 	}
 	
 	public abstract class TreeNode {
 		Buffer nodeblock;
 		abstract Buffer insert(byte[] key, address a);
 		abstract Buffer delete(byte[] key);
-		abstract address search(byte[] key);
+		abstract int search(byte[] key);
+		//abstract address search(byte[] key1, byte[] key2);
+		
 		public int compare(byte[] buffer1,byte[] buffer2) {
 			
 			for (int i = 0, j = 0; i < buffer1.length && j < buffer2.length; i++, j++) {
@@ -205,7 +299,7 @@ public class BplusTree {
 		}
 
 		@Override
-		address search(byte[] key) {
+		int search(byte[] key) {
 			// TODO Auto-generated method stub
 			int keynum = nodeblock.getInt(1);
 			int i = 0;
@@ -226,6 +320,7 @@ public class BplusTree {
 			
 			return child.search(key); 
 		}
+		
 		
 		Buffer split(byte[] key, TreeNode left, TreeNode right) {
 			
@@ -740,11 +835,11 @@ public class BplusTree {
 		}
 
 		@Override
-		address search(byte[] key) {
+		int search(byte[] key) {
 			// TODO Auto-generated method stub
 			int keynum = nodeblock.getInt(1);
 			if (keynum == 0) {
-				return null;
+				return -1;
 			}
 			byte[] thiskey = new byte[index.Size];
 			
@@ -752,26 +847,28 @@ public class BplusTree {
 				thiskey[i] = key[i];
 			}
 			for (int i = key.length; i < index.Size; i++) {
-				key[i] = '&';
+				key[i] = '*';
 			}
 			
-			boolean find = false;
+			//boolean find = false;
 			int start = 17;
 			for (int i = 0; i < keynum; i++) {
 				start = 17 + i * (index.Size + 8);
-				if (compare(key,nodeblock.getBytes(start, index.Size)) == 0){  
-					find = true;
-                    break;  
+				if (compare(key,nodeblock.getBytes(start, index.Size)) >= 0){  
+					//find = true;
+					return nodeblock.blockOffset;
+                    //break;  
                 }  
 			}
 			
-			if (find) {
-				address a = new address();
-				a.blockOffset = nodeblock.getInt(start - 8);
-				a. offset = nodeblock.getInt(start - 4);
-				return a;
-			}
-			else return null;
+			//if (find) {
+				//address a = new address;
+				//a[0].blockOffset = nodeblock.getInt(start - 8);
+				//a. offset = nodeblock.getInt(start - 4);
+				//return a;
+			//}
+			//else 
+			return -1;
 		}
 		
 		Buffer combine(Buffer nextblock) {

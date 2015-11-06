@@ -8,8 +8,10 @@ public class Table {
 	int AttriNum		= 0;
 	int RowNum			= 0;
 	int BlockNum		= 0;
+	int RecordLength	= 0;//一个table里所有attri的长度
 	ArrayList<Attribute>	Attributes	= new ArrayList<Attribute>();
 	ArrayList<Record>		Records		= new ArrayList<Record>();
+	ArrayList<Index>		Indexs		= new ArrayList<Index>();
 	
 	public Table(String tname) throws IOException
 	{
@@ -27,6 +29,7 @@ public class Table {
 		
 		Attributes.add(attri);
 		AttriNum++;
+		this.RecordLength += attri.ScaleByte;
 		return true;//success
 	}
 	
@@ -112,6 +115,10 @@ public class Table {
 	}
 	
 	
+	public void AddIndex(Index indexinfo)
+	{
+		this.Indexs.add(indexinfo);
+	}
 	
 	void InsertElement(int index,String s){
 		

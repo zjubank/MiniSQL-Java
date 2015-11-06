@@ -9,9 +9,10 @@ public class Index {
 	public int RootNum; //根节点在当前Table的第几个Block上
 	public int BlockNum = 1;
 	
-	public Index(String IndexName, String TableName, int Attribute){
+	public Index(String IndexName, String TableName, int Attribute, int Size){
 		this.IndexName = IndexName;
 		this.TableName = TableName;
 		this.Attri = Attribute;
+		this.Size = Size;
 	}
 }

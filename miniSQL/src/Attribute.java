@@ -10,9 +10,11 @@ public class Attribute {
 	public int Scale	= 9;//Int最大长度(默认为9)
 	public int Addit	= 4;//Double小数点位数(默认为4)
 	public int BolckNum = 0;
+	public int ScaleByte= 0;
 	
 	public boolean IfUnique = false;
 	public boolean IfPrimer = false;
+	public boolean HasIndex = false;
 	
 	public Attribute( String AttributeName, int Type, int Length, int Scale, int Addit, boolean IfUnique, boolean IfPrimer )
 	{
@@ -23,8 +25,23 @@ public class Attribute {
 		this.Addit			= Addit;
 		this.IfUnique 		= IfUnique;
 		this.IfPrimer 		= IfPrimer;
+		switch(Type)
+		{
+		case 0: case 1: ScaleByte = 11; break;
+		case 2: ScaleByte = Scale; break;
+		default: break;
+		}
 	}
 	
+	public void CreateIndexOnAttri()
+	{
+		this.HasIndex = true;
+	}
+	
+	public void DeleteIndexOnAttri()
+	{
+		this.HasIndex = false;
+	}
 //	By lhq
 //	public boolean unique;
 //	public boolean Primer;
