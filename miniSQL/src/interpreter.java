@@ -29,7 +29,7 @@ public class interpreter {
 //        }
 		List<File> ll = getFiles(new File(".."),"cat");
 		for (File ff : ll) {
-//        	Database.Rebuild(ff);
+        	//Database.Rebuild(ff);
         }
 			
 		System.out.println("Welcome to the MySQL monitor. Commands end with ;.");

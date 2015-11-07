@@ -3,6 +3,7 @@ package miniSQL;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.function.UnaryOperator;
 
 import javax.swing.table.TableStringConverter;
 
@@ -508,13 +509,27 @@ public class API {
 								emptytable.Attributes.add(output_table.Attributes.get(index_attri));
 								emptytable.AttriNum++;
 							}
+							Record[] Rec = new Record[output_table.AttriNum];
+							for (int i=0;i<output_table.AttriNum;i++){
+								Rec[i]=new Record(output_table.Attributes.get(i).Type);
+							}
 							for( int index_record = 0; index_record < output_table.RowNum; index_record++ )
 							{
 								if( deleteflag[index_record] == false )
 								{
-									emptytable.Records.add(output_table.Records.get(index_record));
+									for (int i=0;i<output_table.AttriNum;i++){
+										int type=output_table.Records.get(i).type;
+										switch (type){
+											case 0:Rec[i].add(output_table.Records.get(i).Int.get(index_record));break;
+											case 1:Rec[i].add(output_table.Records.get(i).Dou.get(index_record));break;
+											case 2:Rec[i].add(output_table.Records.get(i).Str.get(index_record));break;
+										}
+									}
 									emptytable.RowNum++;
 								}
+							}
+							for (int i=0;i<output_table.AttriNum;i++){
+								emptytable.Records.add(Rec[i]);
 							}
 //							output_table = emptytable;
 //							output_table.Attributes.set(Index_Attri, temp_attri);

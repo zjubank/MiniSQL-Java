@@ -620,6 +620,7 @@ public class Opt {
 			wherelist.lvars.add(wherecombine.lvar);
 			wherelist.rvars.add(wherecombine.rvar);
 			wherelist.signs.add(wherecombine.sign);
+			//WRONG
 			System.out.println("=Split lvar:"+wherecombine.lvar);
 			System.out.println("=Splic sign:"+wherecombine.sign);
 			System.out.println("=Splic rvar:"+wherecombine.rvar);
@@ -643,6 +644,7 @@ public class Opt {
 				rvar=DisSpace.dislodge_space(rvar);
 				rvar = rvar.replace("'", "");
 				System.out.println("lvar:"+lvar+", rvar:"+rvar+", sign:"+sign_list[i]);
+				break;
 				//operate (lvar,rvar,sign);
 			}
 		}
