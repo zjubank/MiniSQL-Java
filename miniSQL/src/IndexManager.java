@@ -70,21 +70,7 @@ public class IndexManager {
         	
         	System.out.println("Successfully");
 	}
-	public static void rebulidIndex (Table tableInfo,Index indexInfo) {
-		for (int i = 0; i < indexInfo.BlockNum ; i++) {
-			Buffer thisblock = BufferManager.readBlock(indexInfo.IndexName+".index", i);
-			if(BufferManager.head.next==null){
-				BufferManager.head.next=thisblock;
-				thisblock.previous=BufferManager.head;
-			}
-			else{
-				BufferManager.tail.next=thisblock;
-				thisblock.previous=BufferManager.tail;
-			}
-			BufferManager.tail = thisblock;
-		}
-		BplusTree thisTree = new BplusTree(indexInfo, buffer, indexInfo.RootNum); //插入树中
-	}
+	
 	public static void insertrecord(Table tableInfo, Index indexInfo, byte [] Record, address a) {
 		byte[] key = getIndexAttribute(tableInfo, indexInfo, Record);
 		BplusTree thisTree = new BplusTree(indexInfo,buffer,indexInfo.RootNum); //插入树中
@@ -107,6 +93,9 @@ public class IndexManager {
 		
 		BplusTree thisTree = new BplusTree(indexInfo,buffer,indexInfo.RootNum);
 		ArrayList<address> a = thisTree.search(key1, key2);
+		for (int i = 0; i<a.size(); i++) {
+			System.out.println("blockOffset = "+a.get(i).blockOffset+" offset = " + a.get(i).offset);
+		}
 		return a;
 	}
 	
@@ -117,11 +106,13 @@ public class IndexManager {
 		BufferManager.BufferToFile(indexInfo.IndexName+".index");
 	}
 	
-	public static void dropindex(Index indexInfo) {
-		String filename = indexInfo.IndexName;
-		File fs = new File(filename + ".index");
+	public static void dropindex(String indexname) {
+		
+		//String filename = indexInfo.IndexName;
+		File fs = new File(indexname + ".index");
 		fs.delete();
-		fs = new File(filename+".txt");
+		fs = new File(indexname+".txt");
+		fs.delete();
 		System.out.println("the index has been deleted!");
 	}
 	
@@ -163,8 +154,34 @@ public class IndexManager {
 			e.printStackTrace();
 		}
 		return null;
-		
-		
+	}
+	
+	public static Index readindex(String tablename, String indexname) {
+		FileInputStream fos;
+
+		try {
+			fos = new FileInputStream(indexname+".txt");
+			byte[] b = new byte[11];
+			fos.read(b);
+			int attr = Buffer.readInt(b);
+			fos.read(b);
+			int size = Buffer.readInt(b);
+			fos.read(b);
+			int blocknum = Buffer.readInt(b);
+			fos.read(b);
+			int rootnum = Buffer.readInt(b);
+			System.out.println("attr = "+attr + "size = "+size +"blocknum = "+blocknum+"rootnum = "+rootnum);
+
+			Index indexInfo = new Index(indexname, tablename, attr,size,blocknum,rootnum);
+			return indexInfo;
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
 	}
 }
 

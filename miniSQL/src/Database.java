@@ -35,6 +35,7 @@ public class Database {
 //		{
 			Table temp_table = RecordManager1.ReadFile(tablename);
 			System.out.println("Pre:"+API.database.Tables.size());
+			System.out.println("_____________________API    _____BLOCKNUM = " + temp_table.BlockNum);
 			API.database.Tables.add( temp_table );
 			System.out.println("After:"+API.database.Tables.size());
 //			System.out.println(API.database.Tables.get(0).Records.get(0).Str.get(0));

@@ -5,7 +5,7 @@ import java.util.Arrays;
 public class Buffer {
 	public String fileName;
 	public byte[] block;
-	public static final int Maxbyte = 128;
+	public static final int Maxbyte = 64;
 	//public int recordNum;
 	public int blockOffset;
 	public int RecordNum;

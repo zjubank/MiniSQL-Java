@@ -25,6 +25,7 @@ public class RecordManager1 {
 	
 	static void WriteFile(Table t,File f) throws IOException{
 		FileWriter fout=new FileWriter(f);
+		int PrintLength=Database.MaxBlock;
 //		System.out.println("Ready to Wtite File. Loop time: "+t.RowNum);
 		for (int i=0;i<t.RowNum;i++){//RecordNumber
 			String str="";
@@ -57,20 +58,25 @@ public class RecordManager1 {
 				}
 			}
 //			System.out.println("Str At0: "+str);
-			while (str.length()>Database.MaxBlock){
-				String substr=str.substring(0,Database.MaxBlock);
-				fout.write(substr);
-				str=str.substring(Database.MaxBlock);
+			
+			fout.write(str);
+			PrintLength=PrintLength-t.RecordLength;
+			if (PrintLength==0){
+				PrintLength=Database.MaxBlock;
+			}
+			if (PrintLength<t.RecordLength) {
+				for(int ti=0;ti<PrintLength;ti++){
+					fout.write("*");
+					
+				}
+				PrintLength=Database.MaxBlock;
 			}
 //			System.out.println("Str At1: "+str);
-			//现在不需要补全了
-//			while (str.length()<Database.MaxBlock&&str.length()!=0){
-//				str=str+"*";
-//			}
+//			现在不需要补全了
+			
 			System.out.println("Str Final: "+str);
 
 //			System.out.println("str="+str);
-			fout.write(str);
 		}
 		fout.close();
 	}
@@ -229,17 +235,19 @@ public class RecordManager1 {
 			case 2: temp_attri.ScaleByte = Scale; break;
 			default: break;
 			}
+			temp_table.RecordLength += temp_attri.ScaleByte;
 			temp_table.Attributes.add(temp_attri);
-
+//			temp_table.AttriNum++;
 			Counter++;
 		}
 		
-//		Counter = 0;
+		//		Counter = 0;
 		//鐜板湪Rec鏂囦欢鍙湁涓�琛�
 		str = Rbin.readLine();
 		//gai
 		int AttriNum = temp_table.AttriNum;
 		int RowNum = 0;
+		int ReadLength=Database.MaxBlock;
 		Record[] Rec=new Record[AttriNum];
 		for (int i=0;i<AttriNum;i++){
 			int type=temp_table.Attributes.get(i).Type;
@@ -249,16 +257,19 @@ public class RecordManager1 {
 		while( str.length() > 0  )
 		{
 			RowNum++;
+
+			
 			if( str == null )
 			{
 				System.out.println("[Warning] Table '"+tablename+"': Record is Empty!");
 					return null;		
-			}		
+			}
 			System.out.println("AttriNum:"+temp_table.AttriNum);
 			
 			
 			for( int i = 0; i < AttriNum; i++ )
 			{
+				
 				switch(temp_table.Attributes.get(i).Type)
 				{
 				case 0:
@@ -336,16 +347,32 @@ public class RecordManager1 {
 					break;
 				}
 			}
-			
+			System.out.println("Length1:"+ReadLength);
+			ReadLength-=temp_table.RecordLength;
+			System.out.println("Length2:"+ReadLength);
+			if (ReadLength<temp_table.RecordLength){
+				System.out.println("Str======"+str);
+				str=str.substring(ReadLength);
+				ReadLength=Database.MaxBlock;
+				System.out.println("Str======"+str);
+			}
+			System.out.println("Length3:"+ReadLength);
 //			Counter++;
 		}
 		//gai
 		for (int i=0;i<AttriNum;i++){
 			temp_table.Records.add(Rec[i]);
 		}
+		
+
 		//gai end
 //		API.database.Tables.set(Index_Table, temp_table);
 		temp_table.RowNum = RowNum;
+		
+		int MaxRecPerBlock = 64 / temp_table.RecordLength;
+		temp_table.BlockNum = (int) Math.ceil( (double) temp_table.RowNum / (double) MaxRecPerBlock);
+		System.out.println("RowNum"+temp_table.RowNum);
+		System.out.println("MacRecPerBolck"+MaxRecPerBlock+", RecordLength:"+temp_table.RecordLength+", BlockNum"+temp_table.BlockNum);
 		return temp_table;
 	}
 	

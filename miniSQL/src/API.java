@@ -92,7 +92,7 @@ public class API {
 	
 	public static boolean CreateIndex( String IndexName, String TableName, String AttributeName ) throws IOException
 	{
-//		System.out.println("|**** Create Index ****|");
+		System.out.println("|**** Create Index ****|");
 		int Index_Table = -1;
 		for( int i = 0; i < database.Tables.size(); i++)
 		{
@@ -121,7 +121,10 @@ public class API {
 			return false;
 		}
 		
+		//Attribute：建在第几个attribute上么
 		Index indexInfo = new Index( IndexName, TableName, Attribute, database.Tables.get(Index_Table).Attributes.get(Attribute).ScaleByte);
+		System.out.println("IndexName = " + IndexName + "TableName = " + TableName+"Attribute = "+ Attribute + "Size = " + database.Tables.get(Index_Table).Attributes.get(Attribute).ScaleByte);
+		
 		IndexManager.createIndex(database.Tables.get(Index_Table),indexInfo);
 		
 		Table temp_table = database.Tables.get(Index_Table);
@@ -429,7 +432,7 @@ public class API {
 							Record temp_record = output_table.Records.get(Index_Attri); 
 							int SubLengthTmp = 0;
 							//逐条记录查找
-							for( int Index_item = 0; Index_item < temp_attri.Length; Index_item++ )
+							for( int Index_item = 0; Index_item < output_table.RowNum; Index_item++ )
 							{
 								System.out.println("Check Index:"+Index_item+". Type:"+temp_record.type);
 								switch(sign)
@@ -504,33 +507,7 @@ public class API {
 								}//switch
 							}//for ( index_item < Attri.Length )
 							
-							for( int index_attri = 0 ; index_attri < output_table.AttriNum; index_attri++)
-							{
-								emptytable.Attributes.add(output_table.Attributes.get(index_attri));
-								emptytable.AttriNum++;
-							}
-							Record[] Rec = new Record[output_table.AttriNum];
-							for (int i=0;i<output_table.AttriNum;i++){
-								Rec[i]=new Record(output_table.Attributes.get(i).Type);
-							}
-							for( int index_record = 0; index_record < output_table.RowNum; index_record++ )
-							{
-								if( deleteflag[index_record] == false )
-								{
-									for (int i=0;i<output_table.AttriNum;i++){
-										int type=output_table.Records.get(i).type;
-										switch (type){
-											case 0:Rec[i].add(output_table.Records.get(i).Int.get(index_record));break;
-											case 1:Rec[i].add(output_table.Records.get(i).Dou.get(index_record));break;
-											case 2:Rec[i].add(output_table.Records.get(i).Str.get(index_record));break;
-										}
-									}
-									emptytable.RowNum++;
-								}
-							}
-							for (int i=0;i<output_table.AttriNum;i++){
-								emptytable.Records.add(Rec[i]);
-							}
+}
 //							output_table = emptytable;
 //							output_table.Attributes.set(Index_Attri, temp_attri);
 //							output_table.Records.set(Index_Attri, temp_record);
@@ -538,6 +515,34 @@ public class API {
 					}//for ( index_attri < table.AttriNum ) 每一个条件的所有Attribute都判断（跳）完之后
 					
 				}//for ( vars ) 所有条件都判断完之后
+				
+			for( int index_attri = 0 ; index_attri < output_table.AttriNum; index_attri++)
+			{
+				emptytable.Attributes.add(output_table.Attributes.get(index_attri));
+				emptytable.AttriNum++;
+			}
+			Record[] Rec = new Record[output_table.AttriNum];
+			for (int i=0;i<output_table.AttriNum;i++){
+				Rec[i]=new Record(output_table.Attributes.get(i).Type);
+			}
+			for( int index_record = 0; index_record < output_table.RowNum; index_record++ )
+			{
+				if( deleteflag[index_record] == false )
+				{
+					for (int i=0;i<output_table.AttriNum;i++){
+						int type=output_table.Records.get(i).type;
+						switch (type){
+							case 0:Rec[i].add(output_table.Records.get(i).Int.get(index_record));break;
+							case 1:Rec[i].add(output_table.Records.get(i).Dou.get(index_record));break;
+							case 2:Rec[i].add(output_table.Records.get(i).Str.get(index_record));break;
+						}
+					}
+					emptytable.RowNum++;
+				}
+			}
+			for (int i=0;i<output_table.AttriNum;i++){
+				emptytable.Records.add(Rec[i]);
+			
 				
 			}//else ( wherelist != null )
 			OutputTable(emptytable);
@@ -623,7 +628,7 @@ public class API {
 						Record temp_record = temp_table.Records.get(Index_Attri);
 						
 						//从上到下搜索部分
-						for( int Index_item = 0; Index_item < temp_attri.Length; Index_item++ )
+						for( int Index_item = 0; Index_item < temp_table.RowNum; Index_item++ )
 						{
 							switch(sign)
 							{
@@ -728,30 +733,60 @@ public class API {
 					}
 				}
 				
-				Table new_table = new Table(TableName);
-				new_table.AttriNum = temp_table.AttriNum;
-				for( int i = 0; i < temp_table.AttriNum; i++ )
+				Table emptytable = new Table(TableName);
+				for( int index_attri = 0 ; index_attri < temp_table.AttriNum; index_attri++)
 				{
-					Attribute new_Attri=temp_table.Attributes.get(i);
-					System.out.println("kmtest"+new_Attri.AttributeName);
-					new_table.Attributes.add(new_Attri);
-					System.out.println("=>"+new_table.Attributes.get(i).AttributeName);
-
+					emptytable.BlockNum = temp_table.BlockNum;
+					emptytable.RecordLength = temp_table.RecordLength;
+					emptytable.Attributes.add(temp_table.Attributes.get(index_attri));
+					emptytable.AttriNum++;
 				}
-				for( int i = 0; i < temp_table.Records.size(); i++ )
+				Record[] Rec = new Record[temp_table.AttriNum];
+				for (int i=0;i<temp_table.AttriNum;i++){
+					Rec[i]=new Record(temp_table.Attributes.get(i).Type);
+				}
+				for( int index_record = 0; index_record < temp_table.RowNum; index_record++ )
 				{
-					if( deleteflag[i] == false )
+					if( deleteflag[index_record] == false )
 					{
-						new_table.Records.add(temp_table.Records.get(i));
-						new_table.RowNum++;
+						for (int i=0;i<temp_table.AttriNum;i++){
+							int type=temp_table.Records.get(i).type;
+							switch (type){
+								case 0:Rec[i].add(temp_table.Records.get(i).Int.get(index_record));break;
+								case 1:Rec[i].add(temp_table.Records.get(i).Dou.get(index_record));break;
+								case 2:Rec[i].add(temp_table.Records.get(i).Str.get(index_record));break;
+							}
+						}
+						emptytable.RowNum++;
 					}
 				}
+				for (int i=0;i<temp_table.AttriNum;i++){
+					emptytable.Records.add(Rec[i]);
+				}
+//				new_table.AttriNum = temp_table.AttriNum;
+//				for( int i = 0; i < temp_table.AttriNum; i++ )
+//				{
+//					Attribute new_Attri=temp_table.Attributes.get(i);
+//					System.out.println("kmtest"+new_Attri.AttributeName);
+//					new_table.Attributes.add(new_Attri);
+//					System.out.println("=>"+new_table.Attributes.get(i).AttributeName);
+//
+//				}
+//				for( int i = 0; i < temp_table.Records.size(); i++ )
+//				{
+//					if( deleteflag[i] == false )
+//					{
+//						new_table.Records.add(temp_table.Records.get(i));
+//						new_table.RowNum++;
+//					}
+//				}
 				
-				int MaxRecsPerBlock = 64 / temp_table.RecordLength;
-				temp_table.BlockNum = (int) Math.ceil( (double)temp_table.RowNum / (double) MaxRecsPerBlock);
-				
-				database.Tables.set(Index_Table, new_table);
-				System.out.println(new_table);
+//				int MaxRecsPerBlock = 64 / temp_table.RecordLength;
+//				temp_table.BlockNum = (int) Math.ceil( (double)temp_table.RowNum / (double) MaxRecsPerBlock);
+				System.out.println("RowNum:"+emptytable.RowNum);
+				database.Tables.set(Index_Table, emptytable);
+				RecordManager1.GenerateRecordFile(emptytable);
+//				System.out.println(new_table);
 			}
 		}
 		return true;
@@ -791,6 +826,7 @@ public class API {
 	
 	public static boolean DropIndex( String IndexName )
 	{
+		IndexManager.dropindex(IndexName);
 		
 		return true;
 	}
@@ -810,6 +846,7 @@ public class API {
 		}
 		if( Index_Table == -1 )
 		{
+			System.out.println("[ERROR] No such Table!");
 			return false;
 		}
 //		System.out.println("Index_Table:"+Index_Table);
@@ -822,12 +859,14 @@ public class API {
 		{
 			System.out.println("=ValuesNo."+Index_ValueNo+". Valuse:"+Values[Index_ValueNo]);
 			System.out.println("=Type: "+database.Tables.get(Index_Table).Attributes.get(Index_ValueNo).Type);
+			
 			//表已经匹配，和Values对应的Record（也就是Attribute）依次赋值
 			switch(database.Tables.get(Index_Table).Attributes.get(Index_ValueNo).Type)
 			{
 				//0:int, 1:float, 2:String
 				case 0:
 				{
+					
 					int temp_int = 0;
 					try{
 						temp_int = Integer.parseInt(Values[Index_ValueNo]);
@@ -835,6 +874,18 @@ public class API {
 					catch( NumberFormatException e )
 					{
 						return false;
+					}
+					
+					if( database.Tables.get(Index_Table).Attributes.get(Index_ValueNo).IfPrimer || database.Tables.get(Index_Table).Attributes.get(Index_ValueNo).IfUnique )
+					{
+						for( int i : database.Tables.get(Index_Table).Records.get(Index_ValueNo).Int)
+						{
+							if( i == temp_int )
+							{
+								System.out.println("[ERROR] The same value has already in this unique attribute!");
+								return false;
+							}
+						}
 					}
 //					System.out.println("Insert Int: "+temp_int);
 					Record temp_record = temp_table.Records.get(Index_ValueNo);
@@ -866,6 +917,18 @@ public class API {
 						return false;
 					}
 					
+					if( database.Tables.get(Index_Table).Attributes.get(Index_ValueNo).IfPrimer || database.Tables.get(Index_Table).Attributes.get(Index_ValueNo).IfUnique )
+					{
+						for( Double i : database.Tables.get(Index_Table).Records.get(Index_ValueNo).Dou)
+						{
+							if( i == temp_double )
+							{
+								System.out.println("[ERROR] The same value has already in this unique attribute!");
+								return false;
+							}
+						}
+					}
+					
 					Record temp_record = temp_table.Records.get(Index_ValueNo);
 					Attribute temp_attri = temp_table.Attributes.get(Index_ValueNo);
 					
@@ -891,6 +954,19 @@ public class API {
 //						int Index_Record = database.Tables.get(Index).Attributes.get(Index_ValueNo).Length;
 						//同一个Index_ValueNo的Records，永远只会add同一个类型的值
 //						System.out.println("Index_ValueNo:"+Index_ValueNo);
+						
+						if( database.Tables.get(Index_Table).Attributes.get(Index_ValueNo).IfPrimer || database.Tables.get(Index_Table).Attributes.get(Index_ValueNo).IfUnique )
+						{
+							for( String i : database.Tables.get(Index_Table).Records.get(Index_ValueNo).Str)
+							{
+								if( i.equals(Values[Index_ValueNo]) )
+								{
+									System.out.println("[ERROR] The same value has already in this unique attribute!");
+									return false;
+								}
+							}
+						}
+						
 						Record temp_record = temp_table.Records.get(Index_ValueNo);
 						Attribute temp_attri = temp_table.Attributes.get(Index_ValueNo);
 						if( temp_table.Records.isEmpty() ){
@@ -924,7 +1000,7 @@ public class API {
 //		System.out.println("!!!"+database.Tables.get(Index_Table).Records.get(0).Str.get(0));
 		
 		System.out.println("RecordLength:"+temp_table.RecordLength);
-		int MaxRecsPerBlock = 64 / temp_table.RecordLength;
+		int MaxRecsPerBlock = (int) Math.ceil( (double) 64 /(double) temp_table.RecordLength);
 		temp_table.BlockNum = (int) Math.ceil( (double)temp_table.RowNum / (double) MaxRecsPerBlock);
 
 		RecordManager1.GenerateRecordFile(temp_table);
