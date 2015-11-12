@@ -923,12 +923,13 @@ public class API {
 			{
 				Cfile.delete();
 			}
+			database.Tables.remove(Index_Table);
 		}
 		else
 		{
 			Exception.DropError();
 		}
-		 DropIndex( TableName );
+		DropIndex( TableName );
 		return true;
 	}
 	
