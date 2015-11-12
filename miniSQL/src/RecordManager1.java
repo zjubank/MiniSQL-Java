@@ -254,6 +254,18 @@ public class RecordManager1 {
 			Rec[i]=new Record(type);
 		}
 		//gai_end
+		if( str.isEmpty() )
+		{
+			System.err.println("Empty");
+			Table table = new Table(tablename);
+			for ( int i = 0; i < temp_table.AttriNum; i++ )
+			{
+				Record r = new Record(temp_table.Attributes.get(i).Type);
+				table.Records.add(r);
+			}
+			return table;
+			
+		}
 		while( str.length() > 0  )
 		{
 			RowNum++;

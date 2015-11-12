@@ -410,19 +410,22 @@ public class Opt {
 			//depart one of the input
 			substr=DisSpace.dislodge_space(substr);
 			
-			int judgement_result = judgement_for_attri(substr);
+			int judgement_result = judgement_for_attri(substr, tablename);
 			boolean IfUnique = false, IfPrimer = false;
 			if ( judgement_result != 0 ) {
-				if( judgement_result == 1 ){
-					IfUnique = true;
-				}
-				if( judgement_result == 2 ){
-					IfPrimer = true;
-					IfUnique = true;
-				}
-				lastcomma=comma+1;
-				comma=str.indexOf(",", lastcomma);
-				continue;
+				return;
+				
+//				if( judgement_result == 1 ){
+//					IfUnique = true;
+//					System.out.println("unique done");
+//				}
+//				if( judgement_result == 2 ){
+//					IfPrimer = true;
+//					IfUnique = true;
+//				}
+//				lastcomma=comma+1;
+//				comma=str.indexOf(",", lastcomma);
+//				continue;
 			}
 			
 			split_space=substr.indexOf(" ");
@@ -494,13 +497,15 @@ public class Opt {
 				default: break;
 			}
 			
-			System.out.println("Tablename:"+tablename+", Name:"+name+", Type:"+Type+", Length:"+Length+", Scale:"+Scale+", Addit:"+Addit+", IfUni:"+IfUnique+", IfPri:"+IfPrimer);
+			System.out.println("Tablename:"+tablename+", Name:"+name+", Type:"+Type+", Length:"+Length+", Scale:"+Scale+", Addit:"+Addit/*+", IfUni:"+IfUnique+", IfPri:"+IfPrimer*/);
 			API.add_attribute(tablename, name, Type, Length, Scale, Addit, IfUnique, IfPrimer);
 			//这里还add了record 见上面那个函数
 			
 //			System.out.println("tablename:"+tablename+", name:"+name+", type:"+type+", para1:"+para1+", para2:"+para2+", para:"+para);
 			
 		}while (comma!=-1);
+		
+		API.AutoIndex(tablename);
 	}
 	
 	boolean Check_nameLegal(String s){
@@ -518,7 +523,7 @@ public class Opt {
 	
 	
 	
-	int judgement_for_attri(String s){
+	int judgement_for_attri(String s, String tablename) throws IOException{
 		String if_uni, if_pri;
 		
 		if (s.length()<6) 
@@ -540,7 +545,8 @@ public class Opt {
 			}
 			sname=rest.substring(brac1+1,brac2);
 			sname=DisSpace.dislodge_space(sname);
-//			System.out.println(sname);
+			System.out.println("unique"+sname);
+			API.GETSNAME(tablename,sname,1);
 			return 1;
 		}
 		
@@ -573,6 +579,7 @@ public class Opt {
 				sname=DisSpace.dislodge_space(sname);
 //				System.out.println(sname);
 				//primary_key(sname);
+				API.GETSNAME(tablename,sname,2);
 				return 2;
 			}
 		}

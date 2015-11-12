@@ -18,7 +18,42 @@ public class API {
 		return true;
 	}
 	
-
+	public static void GETSNAME (String tablename, String sname, int x) throws IOException{
+		int index_table = -1;
+		for( int i = 0; i < database.Tables.size();i++)
+		{
+			if( database.Tables.get(i).TableName.equals(tablename))
+			{
+				System.out.println("TABLE FIND!");
+				index_table = i;
+				break;
+			}
+		}
+		Table t=database.Tables.get(index_table);
+		int index_attri = -1;
+		for (int i=0;i<t.AttriNum;i++){
+			if (sname.equals(t.Attributes.get(i).AttributeName)){
+				Attribute a = t.Attributes.get(i);
+				if (x==1)
+				{
+					a.IfUnique=true;
+					System.out.println("Unique: "+sname);
+				}
+				if (x==2) 
+				{
+					a.IfUnique=true;
+					a.IfPrimer=true;
+					System.out.println("Pri: "+sname);
+				}
+				t.Attributes.set(i, a);
+				index_attri = i;
+			}
+		}
+		database.Tables.set(index_table, t);
+		System.out.println(database.Tables.get(index_table).Attributes.get(index_attri).IfUnique);
+		t.Print();
+	}
+	
 //Create Table －> Class Table
 	//Table: String TableName
 	public static boolean create_table( String tablename ) throws IOException
@@ -41,6 +76,7 @@ public class API {
 	//Attribute: String AttributeName, int Type, int Length, int Scale, int Addit, boolean IfUnique, boolean IfPrimer
 	public static boolean add_attribute( String tablename, String AttributeName, int Type, int Length, int Scale, int Addit, boolean IfUnique, boolean IfPrimer  ) throws IOException
 	{
+		boolean thisunique = false, thisprimer = false;
 		
 		Attribute tmp_attri = new Attribute( AttributeName, Type, Length, Scale, Addit, IfUnique, IfPrimer);
 //		System.out.println("New OK!");
@@ -52,6 +88,11 @@ public class API {
 				Index_Table = i;
 			}
 		}
+		if( Index_Table == -1 )
+		{
+			System.err.println("[ERROR] No such table!");
+			return false;
+		}
 		for( int i = 0; i < database.Tables.get(Index_Table).AttriNum; i++ )
 		{
 			if( database.Tables.get(Index_Table).Attributes.get(i).AttributeName.equals(AttributeName))
@@ -59,7 +100,12 @@ public class API {
 				System.out.println("Attribute Already Existed!");
 				return false;
 			}
+			thisunique = database.Tables.get(Index_Table).Attributes.get(i).IfUnique;
+			thisprimer = database.Tables.get(Index_Table).Attributes.get(i).IfPrimer;
 		}
+		tmp_attri.IfPrimer = thisprimer;
+		tmp_attri.IfUnique = thisunique;
+		
 //		System.out.println("Index = "+Index);
 		if( Index_Table > -1 )
 		{
@@ -88,6 +134,37 @@ public class API {
 		}
 
 		return false;
+	}
+	
+	public static boolean AutoIndex( String TableName ) throws IOException
+	{
+		int Index_Table = -1;
+		String AttriName = "";
+		for( int i = 0; i < database.Tables.size(); i++ )
+		{
+			if( database.Tables.get(i).TableName.equals(TableName))
+			{
+				Index_Table = i;
+				break;
+			}
+		}
+		if( Index_Table == -1 )
+		{
+			return false;
+		}
+		else
+		{
+			for( int i = 0; i < database.Tables.get(Index_Table).Attributes.size(); i++)
+			{
+				if( database.Tables.get(Index_Table).Attributes.get(i).IfPrimer )
+				{
+					AttriName = database.Tables.get(Index_Table).Attributes.get(i).AttributeName;
+					break;
+				}
+			}
+			CreateIndex(TableName, TableName, AttriName);
+		}
+		return true;
 	}
 	
 	public static boolean CreateIndex( String IndexName, String TableName, String AttributeName ) throws IOException
@@ -237,71 +314,55 @@ public class API {
 								System.out.println("=:Record1:"+Record1+", Record2"+Record2);
 
 								ArrayList<address> add_0 = IndexManager.searchrecord(output_table, temp_index, Record1, Record2);
-								
+								for (int i = 0; i < output_table.RowNum; i++) {
+									deleteflag[i] = true;
+								}
 								for( address ad : add_0 )
 								{
 									System.out.println("==>add_0");
 									System.out.println("===>Finall Address: ( "+ad.blockOffset+", "+ad.offset+" )");
+									System.out.println("output_table.RecordLength = "+output_table.RecordLength);
+									
+									deleteflag[ad.blockOffset*(Buffer.Maxbyte/output_table.RecordLength)+ad.offset] = false;
 								}
+								
 								
 								break;
 							case "<>":
 								if( Type == 0 )
 								{
-									Record1 =  Buffer.writeInt(-999999999);//-999999999 to byte[]
-									Record2 =  Buffer.writeInt(Integer.parseInt(rvar));//rvar(int) to byte[]
+									Record1 = Buffer.writeInt(Integer.parseInt(rvar)); //rvar(int) to byte[]
+									Record2 = Buffer.writeInt(Integer.parseInt(rvar));//rvar(int) to byte[]
 								}
 								else if ( Type == 1 )
 								{
-									Record1 = Buffer.writeFloat(-999999999);//-9999999.99 to byte[]
+									Record1 = Buffer.writeFloat( (int)( Double.parseDouble(rvar)*100 ) );//rvar(float) to byte[]
 									Record2 = Buffer.writeFloat( (int)( Double.parseDouble(rvar)*100 ) );//rvar(float) to byte[]
 								}
 								else if ( Type == 2 )
 								{
-									Record1 = Buffer.writeString("\1",temp_attri.ScaleByte);//\1 to byte[]
-									Record2 = Buffer.writeString(rvar,temp_attri.ScaleByte);//rvar(float) to byte[]
-								}
-								ArrayList<address> add_1_0 = IndexManager.searchrecord(output_table, temp_index, Record1, Record2);
-								
-								System.out.println("<>_>:Record1:"+Record1+", Record2"+Record2);
-								
-								if( Type == 0 )
-								{
-									Record1 = Buffer.writeInt(Integer.parseInt(rvar));//rvar(int) to byte[]
-									Record2 = Buffer.writeInt(999999999);//999999999 to byte[]
-								}
-								else if ( Type == 1 )
-								{
-									Record1 = Buffer.writeFloat( (int)( Double.parseDouble(rvar)*100 ) );//rvar(float) to byte[]
-									Record2 = Buffer.writeFloat(999999999);//9999999.99 to byte[]
-								}
-								else if ( Type == 2 )
-								{
 									Record1 = Buffer.writeString(rvar,temp_attri.ScaleByte);//rvar(string) to byte[]
-									Record2 = Buffer.writeString("\127",temp_attri.ScaleByte);//????(a bit string) to byte[]
+									Record2 = Buffer.writeString(rvar,temp_attri.ScaleByte);//rvar(string) to byte[]
 								}
-								System.out.println("<>_<:Record1:"+Record1+", Record2"+Record2);
+								System.out.println("=:Record1:"+Record1+", Record2"+Record2);
+
+								ArrayList<address> add_1 = IndexManager.searchrecord(output_table, temp_index, Record1, Record2);
 								
-								ArrayList<address> add_1_1 = IndexManager.searchrecord(output_table, temp_index, Record1, Record2);
-								
-								for( address ad0 : add_1_0 )
-								{
-									for( address ad1 : add_1_1 )
-									{
-										if( ad0.equals(ad1) )
-										{
-											add.add(ad0);
-										}
-									}
+								for (int i = 0; i < output_table.RowNum; i++) {
+									deleteflag[i] = false;
 								}
-								
-								for( address ad : add )
+								for( address ad : add_1 )
 								{
-									System.out.println("==>add_1 (UNDER BUILDING!!");
+									System.out.println("==>add_1");
 									System.out.println("===>Finall Address: ( "+ad.blockOffset+", "+ad.offset+" )");
+									System.out.println("output_table.RecordLength = "+output_table.RecordLength);
+			
+									deleteflag[ad.blockOffset*(Buffer.Maxbyte/output_table.RecordLength)+ad.offset] = true;
 								}
+								
+								
 								break;
-							case "<":
+							case ">":
 								if( Type == 0 )
 								{
 									Record1 = Buffer.writeInt(Integer.parseInt(rvar));//rvar(int) to byte[]
@@ -315,7 +376,12 @@ public class API {
 								else if ( Type == 2 )
 								{
 									Record1 = Buffer.writeString(rvar,temp_attri.ScaleByte);//rvar(string) to byte[]
-									Record2 = Buffer.writeString("\127",temp_attri.ScaleByte);//????(a bit string) to byte[]
+									byte[] temp_b = new byte[temp_attri.ScaleByte];
+									for (int i = 0; i < temp_b.length; i++) {
+										temp_b[i] = 127;
+									}
+									Record2 = temp_b;
+									//Record2 = Buffer.writeString("\127",temp_attri.ScaleByte);//????(a bit string) to byte[]
 								}
 								System.out.println("<:Record1:"+Record1+", Record2"+Record2);
 								
@@ -326,15 +392,21 @@ public class API {
 									add.add(ad);
 								}
 								
-								
+								for (int i = 0; i < output_table.RowNum; i++) {
+									deleteflag[i] = true;
+								}
+								int total = 0;
 								for( address ad : add_2 )
 								{
 									System.out.println("==>add_2");
 									System.out.println("===>Finall Address: ( "+ad.blockOffset+", "+ad.offset+" )");
+									if (total > 0)
+										deleteflag[ad.blockOffset*(Buffer.Maxbyte/output_table.RecordLength)+ad.offset] = false;
+									total = total +1;
 								}
 								
 								break;
-							case ">":
+							case "<":
 								if( Type == 0 )
 								{
 									Record1 =  Buffer.writeInt(-999999999);//-999999999 to byte[]
@@ -347,7 +419,12 @@ public class API {
 								}
 								else if ( Type == 2 )
 								{
-									Record1 = Buffer.writeString("\1",temp_attri.ScaleByte);//\1 to byte[]
+									byte[] temp_b = new byte[temp_attri.ScaleByte];
+									for (int i = 0; i < temp_b.length; i++) {
+										temp_b[i] = 1;
+									}
+									Record1 = temp_b;
+									//Record1 = Buffer.writeString("\1",temp_attri.ScaleByte);//\1 to byte[]
 									Record2 = Buffer.writeString(rvar,temp_attri.ScaleByte);//rvar(float) to byte[]
 								}
 								System.out.println(">:Record1:"+Record1+", Record2"+Record2);
@@ -359,14 +436,23 @@ public class API {
 									add.add(ad);
 								}
 								
+								for (int i = 0; i < output_table.RowNum; i++) {
+									deleteflag[i] = true;
+								}
+								int last = -1;
 								for( address ad : add_3 )
 								{
 									System.out.println("add_3");
 									System.out.println("===>Finall Address: ( "+ad.blockOffset+", "+ad.offset+" )");
+									System.out.println("outputtable.RowNum = " + output_table.RowNum);
+									
+									deleteflag[ad.blockOffset*(Buffer.Maxbyte/output_table.RecordLength)+ad.offset] = false;
+									last = ad.blockOffset*(Buffer.Maxbyte/output_table.RecordLength)+ad.offset;
 								}
-								
+								if (last != -1)
+									deleteflag[last] = true;
 								break;
-							case "<=":
+							case ">=":
 								if( Type == 0 )
 								{
 									Record1 = Buffer.writeInt(Integer.parseInt(rvar));//rvar(int) to byte[]
@@ -380,20 +466,31 @@ public class API {
 								else if ( Type == 2 )
 								{
 									Record1 = Buffer.writeString(rvar,temp_attri.ScaleByte);//rvar(string) to byte[]
-									Record2 = Buffer.writeString("\127",temp_attri.ScaleByte);//????(a bit string) to byte[]
+									byte[] temp_b = new byte[temp_attri.ScaleByte];
+									for (int i = 0; i < temp_b.length; i++) {
+										temp_b[i] = 127;
+									}
+									Record2 = temp_b;//????(a bit string) to byte[]
 								}
-								System.out.println("<=_<:Record1:"+Record1+", Record2"+Record2);
+								System.out.println("<=_<:Record1:"+Arrays.toString(Record1)+", Record2"+Arrays.toString(Record2));
 								
 								ArrayList<address> add_4 = IndexManager.searchrecord(output_table, temp_index, Record1, Record2);
 								
+								for (int i = 0; i < output_table.RowNum; i++) {
+									deleteflag[i] = true;
+								}
 								for( address ad : add_4 )
 								{
 									System.out.println("==>add_4");
 									System.out.println("===>Finall Address: ( "+ad.blockOffset+", "+ad.offset+" )");
+			
+									System.out.println("deleteflag = "+(ad.blockOffset*(Buffer.Maxbyte/output_table.RecordLength)+ad.offset));
+									deleteflag[ad.blockOffset*(Buffer.Maxbyte/output_table.RecordLength)+ad.offset] = false;
+								
 								}
 								
 								break;
-							case ">=":
+							case "<=":
 								if( Type == 0 )
 								{
 									Record1 =  Buffer.writeInt(-999999999);//-999999999 to byte[]
@@ -406,17 +503,27 @@ public class API {
 								}
 								else if ( Type == 2 )
 								{
-									Record1 = Buffer.writeString("\1",temp_attri.ScaleByte);//\1 to byte[]
+									byte[] temp_b = new byte[temp_attri.ScaleByte];
+									for (int i = 0; i < temp_b.length; i++) {
+										temp_b[i] = 1;
+									}
+									Record1 = temp_b;
+									//Record1 = Buffer.writeString("\1",temp_attri.ScaleByte);//\1 to byte[]
 									Record2 = Buffer.writeString(rvar,temp_attri.ScaleByte);//rvar(float) to byte[]
 								}
 								System.out.println(">=_>:Record1:"+Record1+", Record2"+Record2);
 								
 								ArrayList<address> add_5 = IndexManager.searchrecord(output_table, temp_index, Record1, Record2);
-								
+								for (int i = 0; i < output_table.RowNum; i++) {
+									deleteflag[i] = true;
+								}
 								for( address ad : add_5 )
 								{
 									System.out.println("add_5");
 									System.out.println("===>Finall Address: ( "+ad.blockOffset+", "+ad.offset+" )");
+									
+									deleteflag[ad.blockOffset*(Buffer.Maxbyte/output_table.RecordLength)+ad.offset] = false;
+								
 								}
 								
 								break;
@@ -821,14 +928,41 @@ public class API {
 		{
 			Exception.DropError();
 		}
+		 DropIndex( TableName );
 		return true;
 	}
 	
 	public static boolean DropIndex( String IndexName )
 	{
-		IndexManager.dropindex(IndexName);
+		/*int Index_Table = -1;
+		int Index_Attri = -1;
+		for ( int i = -1; i < database.Tables.size(); i++ )
+		{
+			if( database.Tables.get(i).HasIndex > 0 )
+			{
+				for( int j = -1; j < database.Tables.get(i).Attributes.size(); j++ )
+				{
+					if( database.Tables.get(i).Attributes.get(j).HasIndex )
+					{
+						Index_Table = i;
+						Index_Attri = j;
+					}
+				}
+			}
+			else
+				continue;
+		}
 		
-		return true;
+		if( Index_Table == -1 || Index_Attri == -1 )
+		{
+			System.err.println("[ERROR] No such index!");
+			return false;
+		}
+		else
+		{*/
+			IndexManager.dropindex(IndexName+"nameindex");
+			return true;
+		//}
 	}
 	
 	public static boolean Insert( String TableName, String[] Values) throws NumberFormatException, IOException
