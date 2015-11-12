@@ -60,61 +60,6 @@ public class Table {
 		return true;
 	}
 	
-	public boolean Print() throws IOException{
-		String FileName=TableName+".cat";
-//		System.out.println("|**** Inserc Filepath:"+FileName);
-		FileWriter fout=new FileWriter(FileName);
-		int x=0;
-		for (int i=0;i<AttriNum;i++){
-			x += this.Attributes.get(i).Scale;
-			
-		}
-		x = (int) Math.ceil((double)x/Database.MaxBlock);
-		this.BlockNum = x;
-		fout.write(AttriNum+"\n");
-		for (int i=0;i<AttriNum;i++){
-			fout.write(Attributes.get(i).AttributeName+"\n");
-			fout.write(Attributes.get(i).Type+"\n");
-			fout.write(Attributes.get(i).Length+"\n");
-			fout.write(Attributes.get(i).Scale+"\n");
-			fout.write(Attributes.get(i).Addit+"\n");
-			fout.write(Attributes.get(i).IfUnique+"\n");
-			fout.write(Attributes.get(i).IfPrimer+"\n");
-		}
-		fout.close();
-		return true;//success
-	}
-	
-	boolean Read() throws IOException{
-		String FileName=TableName+".cat";
-		FileReader fin=new FileReader(FileName);
-		BufferedReader bf= new BufferedReader(fin);
-		String Stemp;
-		Stemp=bf.readLine();
-		AttriNum=Integer.parseInt(Stemp);
-		for (int i=0;i<AttriNum;i++){
-			boolean Uni=false,Pri=false;
-			int len=0, sca=9, ty=0, add=-1;
-			String n;
-			n=bf.readLine();
-			
-			Stemp=bf.readLine();
-			len=Integer.parseInt(Stemp);
-			
-			Stemp=bf.readLine();
-			ty=Integer.parseInt(Stemp);
-			
-			Stemp=bf.readLine();
-			if (Stemp.equalsIgnoreCase("true"))
-				Uni=true;
-			
-			Stemp=bf.readLine();
-			if (Stemp.equalsIgnoreCase("true"))
-				Pri=true;
-		}
-		return true;//success
-	}
-	
 	
 	public void AddIndex(Index indexinfo)
 	{

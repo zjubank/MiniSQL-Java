@@ -51,7 +51,7 @@ public class API {
 		}
 		database.Tables.set(index_table, t);
 		System.out.println(database.Tables.get(index_table).Attributes.get(index_attri).IfUnique);
-		t.Print();
+		CatalogManager.Print(t);
 	}
 	
 //Create Table －> Class Table
@@ -128,7 +128,7 @@ public class API {
 //			System.out.println("===Attri At:"+(temp_table.Attributes.size()-1)+"; Type:"+temp_table.Attributes.get(temp_table.Attributes.size()-1).Type);
 			database.Tables.set(Index_Table, temp_table );
 //			System.out.println("########RecordLength:"+temp_table.RecordLength);
-			database.Tables.get(Index_Table).Print();
+			CatalogManager.Print( database.Tables.get(Index_Table) );
 			
 			return true;
 		}
@@ -960,7 +960,7 @@ public class API {
 		}
 		else
 		{*/
-			IndexManager.dropindex(IndexName+"nameindex");
+			IndexManager.dropindex(IndexName);
 			return true;
 		//}
 	}
@@ -1134,7 +1134,7 @@ public class API {
 //		System.out.println("!!!"+database.Tables.get(Index_Table).Records.get(0).Str.get(0));
 		
 		System.out.println("RecordLength:"+temp_table.RecordLength);
-		int MaxRecsPerBlock = (int) Math.ceil( (double) 64 /(double) temp_table.RecordLength);
+		int MaxRecsPerBlock = 64 / temp_table.RecordLength;
 		temp_table.BlockNum = (int) Math.ceil( (double)temp_table.RowNum / (double) MaxRecsPerBlock);
 
 		RecordManager1.GenerateRecordFile(temp_table);

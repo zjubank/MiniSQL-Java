@@ -168,4 +168,18 @@ public class BufferManager {
 		}*/
 		//System.out.println("");
 	}
+
+	public static void addRecordtoBuffer(String filename, byte[] record) {
+		int maxrecordperblock = Buffer.Maxbyte/record.length;
+		if (tail.RecordNum <= maxrecordperblock) {
+			tail.setBytes(tail.RecordNum*record.length, record);
+			tail.RecordNum ++;
+		}
+		else {
+			tail.clear(tail.RecordNum*record.length, Buffer.Maxbyte - tail.RecordNum*record.length);
+			create(filename,BlockNum);
+			tail.RecordNum++;
+			tail.setBytes(0,record);
+		}
+	}
 }

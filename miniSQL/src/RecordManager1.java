@@ -172,74 +172,14 @@ public class RecordManager1 {
 
 	{
 		Table temp_table = new Table(tablename);
+		String str = "";
 		
 		String RFileName = tablename + ".rec";
 		FileInputStream Rfile = new FileInputStream(RFileName);
 		InputStreamReader Rfin = new InputStreamReader(Rfile);
 		BufferedReader Rbin = new BufferedReader(Rfin);
 		
-		
-		String CFileName = tablename + ".cat";
-		FileInputStream Cfile = new FileInputStream(CFileName);
-		InputStreamReader Cfin = new InputStreamReader(Cfile);
-		BufferedReader Cbin = new BufferedReader(Cfin);
-		
-		String str = "";
-		
-		int Counter = -1;
-		while( (str = Cbin.readLine()) != null )
-		{
-//			System.out.println("CReadFile: "+str);
-			if( Counter == -1 )
-			{
-				temp_table.AttriNum = Integer.parseInt(str);
-//				System.out.println("AttriNum:"+temp_table.AttriNum);
-				Counter++;
-				continue;
-			}
-			
-//			str = Cbin.readLine();
-			String AttriName = str;
-//			System.out.println("AttriName:"+AttriName);
-			
-			str = Cbin.readLine();
-			int Type = Integer.parseInt(str);
-//			System.out.println("Type:"+Type);
-			
-			str = Cbin.readLine();
-			int Length = Integer.parseInt(str);
-//			System.out.println("Length:"+Length);
-			
-			str = Cbin.readLine();
-			int Scale = Integer.parseInt(str);
-//			System.out.println("Scale:"+Scale);
-			
-			str = Cbin.readLine();
-			int Addit = Integer.parseInt(str);
-//			System.out.println("Addit:"+Addit);
-			
-			str = Cbin.readLine();
-			boolean IfUnique = Boolean.parseBoolean(str);
-//			System.out.println("IfUnique:"+IfUnique);
-			
-			str = Cbin.readLine();
-			boolean IfPrimer = Boolean.parseBoolean(str);
-//			System.out.println("IfPrimer:"+IfPrimer);
-			
-			System.out.println("Tablename:"+tablename+", Name:"+AttriName+", Type:"+Type+", Length:"+Length+", Scale:"+Scale+", Addit:"+Addit+", IfUni:"+IfUnique+", IfPri:"+IfPrimer);
-
-			Attribute temp_attri = new Attribute(AttriName, Type, Length, Scale, Addit, IfUnique, IfPrimer);
-			switch(Type)
-			{
-			case 0: case 1: temp_attri.ScaleByte = 11; break;
-			case 2: temp_attri.ScaleByte = Scale; break;
-			default: break;
-			}
-			temp_table.RecordLength += temp_attri.ScaleByte;
-			temp_table.Attributes.add(temp_attri);
-//			temp_table.AttriNum++;
-			Counter++;
-		}
+		temp_table = CatalogManager.Read(tablename);
 		
 		//		Counter = 0;
 		//鐜板湪Rec鏂囦欢鍙湁涓�琛�

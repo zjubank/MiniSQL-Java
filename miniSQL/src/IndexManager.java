@@ -3,6 +3,7 @@ package miniSQL;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -45,6 +46,7 @@ public class IndexManager {
 			System.out.println("blocknum = "+tableInfo.BlockNum);
         	try{   	
         		for(int blockOffset= 0; blockOffset< tableInfo.BlockNum; blockOffset++){
+        			System.out.println("___________________RECORDLENGTH = " + tableInfo.RecordLength);
         			Buffer thisblock = BufferManager.readRecord(filename, blockOffset, tableInfo.RecordLength);       			
         			for(int offset = 0; offset < thisblock.RecordNum ; offset++){
         				int position = offset * tableInfo.RecordLength; 
@@ -61,6 +63,7 @@ public class IndexManager {
         				BufferManager.BufferToFile(indexInfo.IndexName+".index");
         			}
         		}
+        		CatalogManager.writeIndex(indexInfo);
         	}catch(NullPointerException e){
         		System.err.println("must not be null for key.");
         	}
@@ -107,16 +110,16 @@ public class IndexManager {
 	}
 	
 	public static void dropindex(String indexname) {
-		
 		//String filename = indexInfo.IndexName;
-		File fs = new File(indexname + ".index");
+		File fs = new File(indexname+".index");
 		fs.delete();
-		fs = new File(indexname+".txt");
+		fs = new File(indexname+".index.cat");
 		fs.delete();
 		System.out.println("the index has been deleted!");
 	}
 	
-	public static Index rebulidIndex (Table tableInfo,String indexname) {
+	public static void rebuildIndex (Table tableInfo, Index indexInfo) {
+		String indexname = indexInfo.IndexName;
 		FileInputStream fos;
 		try {
 			fos = new FileInputStream(indexname+".txt");
@@ -131,7 +134,7 @@ public class IndexManager {
 			int rootnum = Buffer.readInt(b);
 			System.out.println("attr = "+attr + "size = "+size +"blocknum = "+blocknum+"rootnum = "+rootnum);
 
-			Index indexInfo = new Index(indexname, tableInfo.TableName, attr,size,blocknum,rootnum);
+//			Index indexInfo = new Index(indexname, tableInfo.TableName, attr,size,blocknum,rootnum);
 			for (int i = 0; i < indexInfo.BlockNum ; i++) {
 				Buffer thisblock = BufferManager.readBlock(indexInfo.IndexName+".index", i);
 				if(BufferManager.head.next==null){
@@ -144,7 +147,7 @@ public class IndexManager {
 				}
 				BufferManager.tail = thisblock;
 			}
-			return indexInfo;
+//			return indexInfo;
 		//	BplusTree thisTree = new BplusTree(indexInfo, buffer, indexInfo.RootNum); //插入树中
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
@@ -153,35 +156,9 @@ public class IndexManager {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return null;
+//		return null;
 	}
 	
-	public static Index readindex(String tablename, String indexname) {
-		FileInputStream fos;
 
-		try {
-			fos = new FileInputStream(indexname+".txt");
-			byte[] b = new byte[11];
-			fos.read(b);
-			int attr = Buffer.readInt(b);
-			fos.read(b);
-			int size = Buffer.readInt(b);
-			fos.read(b);
-			int blocknum = Buffer.readInt(b);
-			fos.read(b);
-			int rootnum = Buffer.readInt(b);
-			System.out.println("attr = "+attr + "size = "+size +"blocknum = "+blocknum+"rootnum = "+rootnum);
-
-			Index indexInfo = new Index(indexname, tablename, attr,size,blocknum,rootnum);
-			return indexInfo;
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return null;
-	}
 }
 
